@@ -17,6 +17,10 @@
 #define SNES_SCREEN_WIDTH  256
 #define SNES_SCREEN_HEIGHT 192
 
+#define FIXED_POINT 0x10000UL
+#define FIXED_POINT_REMAINDER 0xffffUL
+#define FIXED_POINT_SHIFT 16
+
 static struct MENU_OPTIONS mMenuOptions;
 static int mEmuScreenHeight;
 static int mEmuScreenWidth;
@@ -50,8 +54,13 @@ void JustifierButtons (uint32&)
 {
 }
 
+u32 SamplesDoneThisFrame = 0;
+
 void S9xProcessSound (unsigned int)
 {
+	sal_AudioGenerate(sal_AudioGetSamplesPerFrame() - SamplesDoneThisFrame);
+	SamplesDoneThisFrame = 0;
+	so.err_counter = 0;
 }
 
 extern "C"
@@ -63,8 +72,14 @@ void S9xExit ()
 
 void S9xGenerateSound (void)
 {
-	S9xMessage (0,0,"generate sound");
-	return;
+	so.err_counter += so.err_rate;
+	if (so.err_counter >= FIXED_POINT)
+	{
+		u32 SamplesThisRun = so.err_counter >> FIXED_POINT_SHIFT;
+		so.err_counter &= FIXED_POINT_REMAINDER;
+		sal_AudioGenerate(SamplesThisRun);
+		SamplesDoneThisFrame += SamplesThisRun;
+	}
 }
 
 void S9xSetPalette ()
@@ -332,9 +347,69 @@ const char *S9xGetFilenameInc (const char *e)
      return e;
 }
 
+#define MAX_AUTO_FRAMESKIP 4
+static u32 AudioFrameskip = 0;
+static u32 SufficientAudioControl = 0;
+static u32 FramesSkipped = 0;
+
 void S9xSyncSpeed(void)
 {
-      //S9xMessage (0,0,"sync speed");
+	if (Settings.TurboMode)
+	{
+		if(++FramesSkipped < Settings.TurboSkipFrames)
+			IPPU.RenderThisFrame = FALSE;
+		else
+		{
+			FramesSkipped = 0;
+			IPPU.RenderThisFrame = TRUE;
+		}
+	}
+	else
+	{
+		if (Settings.SkipFrames == AUTO_FRAMERATE)
+		{
+			/* Are we early or late? */
+			u32 FramesBuffered = sal_AudioGetFramesBuffered();
+			if (FramesBuffered < BUFFER_FRAMES)
+			{
+				if (AudioFrameskip < MAX_AUTO_FRAMESKIP)
+					AudioFrameskip++;
+				SufficientAudioControl = 0;
+			}
+			else
+			{
+				SufficientAudioControl++;
+				if (SufficientAudioControl >= 10)
+				{
+					SufficientAudioControl = 0;
+					if (AudioFrameskip > 0)
+						AudioFrameskip--;
+				}
+			}
+
+			if (++FramesSkipped > AudioFrameskip)
+			{
+				FramesSkipped = 0;
+				IPPU.RenderThisFrame = TRUE;
+			}
+			else
+			{
+				IPPU.RenderThisFrame = FALSE;
+			}
+		}
+		else /* if (Settings.SkipFrames != AUTO_FRAMERATE) */
+		{
+			if (++FramesSkipped > Settings.SkipFrames)
+			{
+				FramesSkipped = 0;
+				IPPU.RenderThisFrame = TRUE;
+			}
+			else
+			{
+				IPPU.RenderThisFrame = FALSE;
+			}
+		}
+	}
 }
 
 const char *S9xBasename (const char *f)
@@ -402,10 +477,11 @@ static u32 LastStereo = 0;
 static
 int Run(int sound)
 {
-  	int skip=0, done=0, doneLast=0,aim=0,i;
 	Settings.NextAPUEnabled = Settings.APUEnabled = sound;
+	Settings.SkipFrames = (mMenuOptions.frameSkip == 0)
+		? AUTO_FRAMERATE
+		: mMenuOptions.frameSkip - 1;
 	sal_TimerInit(Settings.FrameTime);
-	done=sal_TimerRead()-1;
 
 	if (sound) {
 		/*
@@ -437,31 +513,12 @@ int Run(int sound)
 		S9xSetSoundMute (TRUE);
 	}
 
-  	while(!mEnterMenu) 
-  	{
-		for (i=0;i<10;i++)
-		{
-			aim=sal_TimerRead();
-			if (done < aim)
-			{
-				done++;
-				if (mMenuOptions.frameSkip == 0) //Auto
-					IPPU.RenderThisFrame = (done >= aim);
-				else if (IPPU.RenderThisFrame = (--skip <= 0))
-					skip = mMenuOptions.frameSkip;
-
-				//Run SNES for one glorious frame
-				S9xMainLoop ();
-
-				sal_AudioGenerate(sal_AudioGetSamplesPerFrame());
-//				HandleQuickStateRequests();
-			}
-			if (done>=aim) break; // Up to date now
-			if (mEnterMenu) break;
-		}
-		done=aim; // Make sure up to date
+	while(!mEnterMenu) 
+	{
+		//Run SNES for one glorious frame
+		S9xMainLoop ();
 		HandleQuickStateRequests();
-  	}
+	}
 
 	if (sound)
 		sal_AudioPause();

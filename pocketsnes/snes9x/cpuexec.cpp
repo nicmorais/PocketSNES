@@ -129,6 +129,8 @@ void S9xMainLoop (void)
 		if (Settings.SuperFX)             S9xMainLoop_NoSA1_SFX   ();
 		else /* if (!Settings.SuperFX) */ S9xMainLoop_NoSA1_NoSFX ();
 	}
+
+	S9xProcessSound(0);
 }
 
 void S9xMainLoop_SA1_SFX (void)
@@ -504,8 +506,6 @@ void S9xDoHBlankProcessing_SFX ()
 			S9xStartHDMA ();
 		}
 
-		S9xProcessSound (0);
-
 		if (PPU.VTimerEnabled && !PPU.HTimerEnabled && CPU.V_Counter == PPU.IRQVBeamPos)
 		{
 			S9xSetIRQ (PPU_V_BEAM_IRQ_SOURCE);
@@ -515,6 +515,7 @@ void S9xDoHBlankProcessing_SFX ()
 		{
 			// Start of V-blank
 			S9xEndScreenRefresh ();
+
 			IPPU.HDMA = 0;
 		    // Bits 7 and 6 of $4212 are computed when read in S9xGetPPU.
 		    missing.dma_this_frame = 0;
@@ -683,8 +684,6 @@ void S9xDoHBlankProcessing_NoSFX ()
 			S9xStartHDMA ();
 		}
 
-		S9xProcessSound (0);
-
 		if (PPU.VTimerEnabled && !PPU.HTimerEnabled && CPU.V_Counter == PPU.IRQVBeamPos)
 		{
 			S9xSetIRQ (PPU_V_BEAM_IRQ_SOURCE);
@@ -694,6 +693,7 @@ void S9xDoHBlankProcessing_NoSFX ()
 		{
 			// Start of V-blank
 			S9xEndScreenRefresh ();
+
 			IPPU.HDMA = 0;
 		    // Bits 7 and 6 of $4212 are computed when read in S9xGetPPU.
 		    missing.dma_this_frame = 0;

@@ -3,10 +3,6 @@
 
 #include <sal.h>
 
-#define BUFFER_FRAMES 4
-// 48000 Hz maximum; 1/50 of a second; 5 frames to hold (4 plus a bit extra)
-#define BUFFER_SAMPLES (48000 / 50 * (BUFFER_FRAMES + 1))
-
 static SDL_AudioSpec audiospec;
 
 volatile static unsigned int ReadPos, WritePos;
@@ -85,6 +81,9 @@ void sal_AudioClose(void)
 
 u32 sal_AudioGenerate(u32 samples)
 {
+	while (sal_AudioGetFramesBuffered() > BUFFER_FRAMES)
+		usleep(1000);
+
 	u32 SamplesAvailable, LocalReadPos = ReadPos /* isolate a bit against races */;
 	if (LocalReadPos <= WritePos)
 		SamplesAvailable = BUFFER_SAMPLES - (WritePos - LocalReadPos);
@@ -95,6 +94,7 @@ u32 sal_AudioGenerate(u32 samples)
 		printf("Audio Warning: Overrun occurred\n");
 		samples = SamplesAvailable - 1;
 	}
+
 	if (samples > BUFFER_SAMPLES - WritePos)
 	{
 		sal_AudioGenerate(BUFFER_SAMPLES - WritePos);

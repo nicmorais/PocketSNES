@@ -12,6 +12,10 @@
 #define SAL_TRUE					1
 #define SAL_FALSE					0
 
+#define BUFFER_FRAMES 3
+// 48000 Hz maximum; 1/50 of a second; 4 frames to hold (3 plus a bit extra)
+#define BUFFER_SAMPLES (48000 / 50 * (BUFFER_FRAMES + 1) + 4)
+
 typedef uint32_t u32;
 typedef int32_t  s32;
 typedef uint16_t u16;
