@@ -626,8 +626,8 @@ int SnesInit()
 	ZeroMemory (&Settings, sizeof (Settings));
 
 	// Here are our timings.
-	Settings.FrameTimeNTSC = 20000;
-	Settings.FrameTimePAL = 16667;
+	Settings.FrameTimeNTSC = 16667;
+	Settings.FrameTimePAL = 20000;
 	Settings.SkipFrames = AUTO_FRAMERATE;
 	Settings.TurboSkipFrames = 5;
 	Settings.AutoMaxSkipFrames = 5;
