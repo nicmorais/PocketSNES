@@ -3,6 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include "conffile.h"
+#include "display.h"
+#include "controls.h"
 #include "unzip.h"
 #include "zip.h"
 #include "menu.h"
@@ -10,16 +14,11 @@
 #include "memmap.h"
 #include "apu.h"
 #include "gfx.h"
-#include "soundux.h"
 #include "snapshot.h"
 #include "scaler.h"
 
 #define SNES_SCREEN_WIDTH  256
 #define SNES_SCREEN_HEIGHT 192
-
-#define FIXED_POINT 0x10000UL
-#define FIXED_POINT_REMAINDER 0xffffUL
-#define FIXED_POINT_SHIFT 16
 
 static struct MENU_OPTIONS mMenuOptions;
 static int mEmuScreenHeight;
@@ -41,44 +40,30 @@ static u32 mVolumeDisplayTimer=0;
 static u32 mFramesCleared=0;
 static u32 mInMenu=0;
 
+static const uint32 P1_L = 1;
+static const uint32 P1_R = 2;
+static const uint32 P1_Up = 3;
+static const uint32 P1_Down = 4;
+static const uint32 P1_Left = 5;
+static const uint32 P1_Right = 6;
+static const uint32 P1_Select = 7;
+static const uint32 P1_Start = 8;
+static const uint32 P1_A = 9;
+static const uint32 P1_B = 10;
+static const uint32 P1_X = 11;
+static const uint32 P1_Y = 12;
+
 static int S9xCompareSDD1IndexEntries (const void *p1, const void *p2)
 {
     return (*(uint32 *) p1 - *(uint32 *) p2);
-}
-
-bool JustifierOffscreen (void)
-{
-	return true;
-}
-
-void JustifierButtons (uint32&)
-{
 }
 
 void S9xProcessSound (unsigned int)
 {
 }
 
-extern "C"
-{
-
 void S9xExit ()
 {
-}
-
-u32 SamplesDoneThisFrame = 0;
-
-void S9xGenerateSound (void)
-{
-	so.err_counter += so.err_rate;
-	if ((Settings.SoundSync >= 2 && so.err_counter >= FIXED_POINT)
-	 || (Settings.SoundSync == 1 && so.err_counter >= FIXED_POINT * 128))
-	{
-		u32 SamplesThisRun = so.err_counter >> FIXED_POINT_SHIFT;
-		so.err_counter &= FIXED_POINT_REMAINDER;
-		sal_AudioGenerate(SamplesThisRun);
-		SamplesDoneThisFrame += SamplesThisRun;
-	}
 }
 
 void S9xSetPalette ()
@@ -109,11 +94,6 @@ bool8 S9xOpenSnapshotFile (const char *fname, bool8 read_only, STREAM *file)
 
 	return (FALSE);	
 }
-
-const char* S9xGetSnapshotDirectory (void)
-{
-	return sal_DirectoryGetHome();
-}
 	
 void S9xCloseSnapshotFile (STREAM file)
 {
@@ -125,33 +105,21 @@ void S9xMessage (int /* type */, int /* number */, const char *message)
 	//MenuMessageBox("PocketSnes has encountered an error",(s8*)message,"",MENU_MESSAGE_BOX_MODE_PAUSE);
 }
 
-void erk (void)
-{
-      S9xMessage (0,0, "Erk!");
-}
-
-const char *osd_GetPackDir(void)
-{
-      S9xMessage (0,0,"get pack dir");
-      return ".";
-}
-
-void S9xLoadSDD1Data (void)
-{
-
-}
-
 u16 IntermediateScreen[SNES_WIDTH * SNES_HEIGHT_EXTENDED];
 
-bool8_32 S9xInitUpdate ()
+bool8 S9xInitUpdate ()
 {
 	if (mInMenu) return TRUE;
 
-	GFX.Screen = (u8*) IntermediateScreen; /* replacement needed after loading the saved states menu */
+	GFX.Screen = IntermediateScreen; /* replacement needed after loading the saved states menu */
 	return TRUE;
 }
 
-bool8_32 S9xDeinitUpdate (int Width, int Height, bool8_32)
+bool8 S9xContinueUpdate (int Width, int Height)
+{
+}
+
+bool8 S9xDeinitUpdate (int Width, int Height)
 {
 	if(mInMenu) return TRUE;
 
@@ -214,32 +182,230 @@ bool8_32 S9xDeinitUpdate (int Width, int Height, bool8_32)
 	sal_VideoFlip(0);
 }
 
-const char *S9xGetFilename (const char *ex)
+/* _splitpath/_makepath: Modified from unix.cpp. See file for credits. */
+#ifndef SLASH_CHAR
+#define SLASH_CHAR '/'
+#endif
+
+void
+_splitpath (const char *path, char *drive, char *dir, char *fname, char *ext)
 {
-	static char dir [SAL_MAX_PATH];
-	char fname [SAL_MAX_PATH];
-	char ext [SAL_MAX_PATH];
+	char *slash = strrchr ((char *) path, SLASH_CHAR);
+	char *dot   = strrchr ((char *) path, '.');
 
-	sal_DirectorySplitFilename(Memory.ROMFilename, dir, fname, ext);
-	strcpy(dir, sal_DirectoryGetHome());
-	sal_DirectoryCombine(dir,fname);
-	strcat (dir, ex);
+	*drive = '\0';
 
-	return (dir);
+	if (dot && slash && dot < slash)
+	{
+		dot = 0;
+	}
+
+	if (!slash)
+	{
+		*dir = '\0';
+		strcpy (fname, path);
+
+		if (dot)
+		{
+			fname[dot - path] = '\0';
+			strcpy (ext, dot + 1);
+		}
+		else
+		{
+			*ext = '\0';
+		}
+	}
+	else
+	{
+		strcpy (dir, path);
+		dir[slash - path] = '\0';
+		strcpy (fname, slash + 1);
+
+		if (dot)
+		{
+			fname[(dot - slash) - 1] = '\0';
+			strcpy (ext, dot + 1);
+		}
+		else
+		{
+			*ext = '\0';
+		}
+	}
 }
 
-uint32 S9xReadJoypad (int which1)
+void
+_makepath (char       *path,
+           const char *drive,
+           const char *dir,
+           const char *fname,
+           const char *ext)
 {
-	uint32 val=0x80000000;
-	if (mInMenu) return val;
-	if (which1 != 0) return val;
+	if (dir && *dir)
+	{
+		strcpy (path, dir);
+		strcat (path, "/");
+	}
+	else
+	*path = '\0';
 
+	strcat (path, fname);
+
+	if (ext && *ext)
+	{
+		strcat (path, ".");
+		strcat (path, ext);
+	}
+}
+
+const char *
+S9xGetFilenameInc (const char *e, enum s9x_getdirtype dirtype)
+{
+	static char  filename[PATH_MAX + 1];
+	char         dir[_MAX_DIR + 1];
+	char         drive[_MAX_DRIVE + 1];
+	char         fname[_MAX_FNAME + 1];
+	char         ext[_MAX_EXT + 1];
+	unsigned int i = 0;
+	struct stat  buf;
+	const char   *d;
+
+	_splitpath (Memory.ROMFilename, drive, dir, fname, ext);
+	d = S9xGetDirectory (dirtype);
+
+	do
+	{
+		snprintf (filename, sizeof (filename),
+			"%s" SLASH_STR "%s%03d%s", d, fname, i, e);
+		i++;
+	}
+	while (stat (filename, &buf) == 0 && i != 0); /* Overflow? ...riiight :-) */
+
+	return (filename);
+}
+
+const char *
+S9xGetDirectory (enum s9x_getdirtype dirtype)
+{
+	static char path[PATH_MAX + 1];
+
+	switch (dirtype)
+	{
+		case HOME_DIR:
+			strcpy (path, sal_DirectoryGetUser());
+			break;
+
+		case SRAM_DIR:
+		case SNAPSHOT_DIR:
+			strcpy(path, sal_DirectoryGetHome());
+			break;
+
+		case SCREENSHOT_DIR:
+		case SPC_DIR:
+		case CHEAT_DIR:
+		case IPS_DIR:
+		default:
+			path[0] = '\0';
+	}
+
+	/* Try and mkdir, whether it exists or not */
+	if (dirtype != HOME_DIR && path[0] != '\0')
+	{
+		mkdir (path, 0755);
+		chmod (path, 0755);
+	}
+
+	/* Anything else, use ROM filename path */
+	if (path[0] == '\0')
+	{
+		char *loc;
+
+		strcpy (path, Memory.ROMFilename);
+
+		loc = strrchr (path, SLASH_CHAR);
+
+		if (loc == NULL)
+		{
+			if (getcwd (path, PATH_MAX + 1) == NULL)
+			{
+				strcpy (path, getenv ("HOME"));
+			}
+		}
+		else
+		{
+			path[loc - path] = '\0';
+		}
+	}
+
+	return path;
+}
+
+const char *
+S9xGetFilename (const char *ex, enum s9x_getdirtype dirtype)
+{
+	static char filename[PATH_MAX + 1];
+	char        dir[_MAX_DIR + 1];
+	char        drive[_MAX_DRIVE + 1];
+	char        fname[_MAX_FNAME + 1];
+	char        ext[_MAX_EXT + 1];
+
+	_splitpath (Memory.ROMFilename, drive, dir, fname, ext);
+
+	snprintf (filename, sizeof (filename), "%s" SLASH_STR "%s%s",
+		S9xGetDirectory (dirtype), fname, ex);
+
+	return (filename);
+}
+
+const char *
+S9xBasename (const char *f)
+{
+    const char *p;
+
+    if ((p = strrchr (f, '/')) != NULL || (p = strrchr (f, '\\')) != NULL)
+        return (p + 1);
+
+    return f;
+}
+
+void
+S9xToggleSoundChannel (int c)
+{
+    static int sound_switch = 255;
+
+    if (c == 8)
+        sound_switch = 255;
+    else
+        sound_switch ^= 1 << c;
+
+    S9xSetSoundControl (sound_switch);
+}
+
+const char* S9xChooseFilename(bool8 read_only)
+{
+	return NULL;
+}
+
+const char* S9xChooseMovieFilename(bool8 read_only)
+{
+	return NULL;
+}
+
+void S9xHandlePortCommand (s9xcommand_t cmd, int16 data1, int16 data2)
+{
+}
+
+void S9xParsePortConfig(ConfigFile&, int pass)
+{
+}
+
+void PSNESReadJoypad ()
+{
 	u32 joy = sal_InputPoll();
 	
 	if (joy & SAL_INPUT_MENU)
 	{
 		mEnterMenu = 1;		
-		return val;
+		return;
 	}
 
 #if 0
@@ -254,7 +420,7 @@ uint32 S9xReadJoypad (int which1)
 			mVolumeDisplayTimer=60;
 			sprintf(mVolumeDisplay,"Vol: %d",mMenuOptions.volume);
 		}
-		return val;
+		return;
 	}
 
 	if ((joy & SAL_INPUT_L)&&(joy & SAL_INPUT_R)&&(joy & SAL_INPUT_DOWN))
@@ -268,45 +434,42 @@ uint32 S9xReadJoypad (int which1)
 			mVolumeDisplayTimer=60;
 			sprintf(mVolumeDisplay,"Vol: %d",mMenuOptions.volume);
 		}
-		return val;
+		return;
 	}
 #endif
 
-	if (joy & SAL_INPUT_Y) val |= SNES_Y_MASK;
-	if (joy & SAL_INPUT_A) val |= SNES_A_MASK;
-	if (joy & SAL_INPUT_B) val |= SNES_B_MASK;
-	if (joy & SAL_INPUT_X) val |= SNES_X_MASK;
-		
-	if (joy & SAL_INPUT_UP) 	val |= SNES_UP_MASK;
-	if (joy & SAL_INPUT_DOWN) 	val |= SNES_DOWN_MASK;
-	if (joy & SAL_INPUT_LEFT) 	val |= SNES_LEFT_MASK;
-	if (joy & SAL_INPUT_RIGHT)	val |= SNES_RIGHT_MASK;
-	if (joy & SAL_INPUT_START) 	val |= SNES_START_MASK;
-	if (joy & SAL_INPUT_SELECT) 	val |= SNES_SELECT_MASK;
-	if (joy & SAL_INPUT_L) 		val |= SNES_TL_MASK;
-	if (joy & SAL_INPUT_R) 		val |= SNES_TR_MASK;
-
-	return val;
+	S9xReportButton(P1_L, (joy & SAL_INPUT_L) != 0);
+	S9xReportButton(P1_R, (joy & SAL_INPUT_R) != 0);
+	S9xReportButton(P1_Up, (joy & SAL_INPUT_UP) != 0);
+	S9xReportButton(P1_Down, (joy & SAL_INPUT_DOWN) != 0);
+	S9xReportButton(P1_Left, (joy & SAL_INPUT_LEFT) != 0);
+	S9xReportButton(P1_Right, (joy & SAL_INPUT_RIGHT) != 0);
+	S9xReportButton(P1_Select, (joy & SAL_INPUT_SELECT) != 0);
+	S9xReportButton(P1_Start, (joy & SAL_INPUT_START) != 0);
+	S9xReportButton(P1_A, (joy & SAL_INPUT_A) != 0);
+	S9xReportButton(P1_B, (joy & SAL_INPUT_B) != 0);
+	S9xReportButton(P1_X, (joy & SAL_INPUT_X) != 0);
+	S9xReportButton(P1_Y, (joy & SAL_INPUT_Y) != 0);
 }
 
-bool8 S9xReadMousePosition (int /* which1 */, int &/* x */, int & /* y */,
-		    uint32 & /* buttons */)
+bool S9xPollAxis (uint32 id, int16 *value)
 {
-	S9xMessage (0,0,"read mouse");
-	return (FALSE);
+	return false;
 }
 
-bool8 S9xReadSuperScopePosition (int & /* x */, int & /* y */,
-				 uint32 & /* buttons */)
+bool S9xPollPointer (uint32 id, int16 *x, int16 *y)
 {
-      S9xMessage (0,0,"read scope");
-      return (FALSE);
+	return false;
 }
 
-const char *S9xGetFilenameInc (const char *e)
+bool S9xPollButton (uint32 id, bool *pressed)
 {
-     S9xMessage (0,0,"get filename inc");
-     return e;
+	return false;
+}
+
+const char * S9xStringInput (const char *message)
+{
+	return NULL;
 }
 
 void S9xSyncSpeed(void)
@@ -314,31 +477,19 @@ void S9xSyncSpeed(void)
       //S9xMessage (0,0,"sync speed");
 }
 
-const char *S9xBasename (const char *f)
-{
-      const char *p;
-
-      S9xMessage (0,0,"s9x base name");
-
-      if ((p = strrchr (f, '/')) != NULL || (p = strrchr (f, '\\')) != NULL)
-         return (p + 1);
-
-      return (f);
-}
-
 void PSNESForceSaveSRAM (void)
 {
 	if(mRomName[0] != 0)
 	{
-		Memory.SaveSRAM ((s8*)S9xGetFilename (".srm"));
+		Memory.SaveSRAM (S9xGetFilename (".srm", SRAM_DIR));
 	}
 }
 
-void S9xSaveSRAM (int showWarning)
+void PSNESSaveSRAM (int showWarning)
 {
 	if (CPU.SRAMModified)
 	{
-		if(!Memory.SaveSRAM ((s8*)S9xGetFilename (".srm")))
+		if(!Memory.SaveSRAM (S9xGetFilename (".srm", SRAM_DIR)))
 		{
 			MenuMessageBox("Saving SRAM","Failed!","",MENU_MESSAGE_BOX_MODE_PAUSE);
 		}
@@ -349,27 +500,23 @@ void S9xSaveSRAM (int showWarning)
 	}
 }
 
-
-
-}
-
-bool8_32 S9xOpenSoundDevice(int a, unsigned char b, int c)
+bool8 S9xOpenSoundDevice()
 {
-
+	return TRUE;
 }
 
 void S9xAutoSaveSRAM (void)
 {
 	if (mMenuOptions.autoSaveSram)
 	{
-		Memory.SaveSRAM (S9xGetFilename (".srm"));
+		Memory.SaveSRAM (S9xGetFilename (".srm", SRAM_DIR));
 		// sync(); // Only sync at exit or with a ROM change
 	}
 }
 
 void S9xLoadSRAM (void)
 {
-	Memory.LoadSRAM ((s8*)S9xGetFilename (".srm"));
+	Memory.LoadSRAM (S9xGetFilename (".srm", SRAM_DIR));
 }
 
 static u32 LastAudioRate = 0;
@@ -379,7 +526,6 @@ static
 int Run(int sound)
 {
   	int skip=0, done=0, doneLast=0,aim=0,i;
-	Settings.NextAPUEnabled = Settings.APUEnabled = sound;
 	Settings.SoundSync = mMenuOptions.soundSync;
 	sal_TimerInit(Settings.FrameTime);
 	done=sal_TimerRead()-1;
@@ -389,9 +535,6 @@ int Run(int sound)
 		Settings.SoundPlaybackRate = mMenuOptions.soundRate;
 		Settings.Stereo = mMenuOptions.stereo ? TRUE : FALSE;
 		*/
-#ifndef FOREVER_16_BIT_SOUND
-		Settings.SixteenBitSound=true;
-#endif
 
 		if (LastAudioRate != mMenuOptions.soundRate || LastStereo != mMenuOptions.stereo)
 		{
@@ -402,9 +545,6 @@ int Run(int sound)
 			sal_AudioInit(mMenuOptions.soundRate, 16,
 						mMenuOptions.stereo, Memory.ROMFramesPerSecond);
 
-			S9xInitSound (mMenuOptions.soundRate,
-						mMenuOptions.stereo, sal_AudioGetSamplesPerFrame() * sal_AudioGetBytesPerSample());
-			S9xSetPlaybackRate(mMenuOptions.soundRate);
 			LastAudioRate = mMenuOptions.soundRate;
 		}
 		S9xSetSoundMute (FALSE);
@@ -429,8 +569,7 @@ int Run(int sound)
 
 				//Run SNES for one glorious frame
 				S9xMainLoop ();
-
-				sal_AudioGenerate(sal_AudioGetSamplesPerFrame() - SamplesDoneThisFrame);
+				PSNESReadJoypad ();
 			}
 			if (done>=aim) break; // Up to date now
 			if (mEnterMenu) break;
@@ -439,7 +578,10 @@ int Run(int sound)
   	}
 
 	if (sound)
+	{
 		sal_AudioPause();
+		S9xSetSoundMute(TRUE);
+	}
 
 	mEnterMenu=0;
 	return mEnterMenu;
@@ -475,7 +617,6 @@ int SnesRomLoad()
 	MenuMessageBox("Done loading the ROM",mRomName,"",MENU_MESSAGE_BOX_MODE_MSG);
 
 	S9xReset();
-	S9xResetSound(1);
 	S9xLoadSRAM();
 	return SAL_OK;
 }
@@ -484,156 +625,101 @@ int SnesInit()
 {
 	ZeroMemory (&Settings, sizeof (Settings));
 
-	Settings.JoystickEnabled = FALSE;
+	// Here are our timings.
+	Settings.FrameTimeNTSC = 20000;
+	Settings.FrameTimePAL = 16667;
+	Settings.SkipFrames = AUTO_FRAMERATE;
+	Settings.TurboSkipFrames = 5;
+	Settings.AutoMaxSkipFrames = 5;
+	Settings.TurboMode = FALSE;
+	Settings.HighSpeedSeek = TRUE;
+	Settings.FrameAdvance = FALSE;
+
+	// Here are our emulation settings.
+	Settings.BlockInvalidVRAMAccessMaster = TRUE;
+	Settings.HDMATimingHack = 100;
+	Settings.ApplyCheats = FALSE;
+	Settings.NoPatch = FALSE;
+	Settings.AutoSaveDelay = 1;
+	Settings.DontSaveOopsSnapshot = TRUE;
+
+	// Here's how we do sound, video and input.
+	Settings.SoundSync = FALSE;
+	Settings.SixteenBitSound = TRUE;
+	Settings.SoundInputRate = 32000;
+	Settings.ReverseStereo = FALSE;
+	S9xSetSoundMute(TRUE);
+	Settings.SupportHiRes = FALSE;
+	GFX.Screen = (uint16*) malloc(SNES_WIDTH * SNES_HEIGHT_EXTENDED * sizeof(uint16));
+	GFX.Pitch = SNES_WIDTH * sizeof(uint16);
+	Settings.OpenGLEnable = FALSE;
+	Settings.Transparency = TRUE;
+	Settings.DisplayFrameRate = FALSE;
+	Settings.DisplayWatchedAddresses = FALSE;
+	Settings.DisplayPressedKeys = FALSE;
+	Settings.DisplayMovieFrame = FALSE;
+	Settings.AutoDisplayMessages = FALSE;
+	Settings.InitialInfoStringTimeout = 120;
+	Settings.UpAndDown = FALSE;
+
+	S9xUnmapAllControls();
+	S9xSetController(0, CTL_JOYPAD, 0, 0, 0, 0);
+	S9xMapButton(P1_L, S9xGetCommandT("Joypad1 L"), false);
+	S9xMapButton(P1_R, S9xGetCommandT("Joypad1 R"), false);
+	S9xMapButton(P1_Up, S9xGetCommandT("Joypad1 Up"), false);
+	S9xMapButton(P1_Down, S9xGetCommandT("Joypad1 Down"), false);
+	S9xMapButton(P1_Left, S9xGetCommandT("Joypad1 Left"), false);
+	S9xMapButton(P1_Right, S9xGetCommandT("Joypad1 Right"), false);
+	S9xMapButton(P1_Select, S9xGetCommandT("Joypad1 Select"), false);
+	S9xMapButton(P1_Start, S9xGetCommandT("Joypad1 Start"), false);
+	S9xMapButton(P1_A, S9xGetCommandT("Joypad1 A"), false);
+	S9xMapButton(P1_B, S9xGetCommandT("Joypad1 B"), false);
+	S9xMapButton(P1_X, S9xGetCommandT("Joypad1 X"), false);
+	S9xMapButton(P1_Y, S9xGetCommandT("Joypad1 Y"), false);
+
+	// Disable all tracing.
+	Settings.TraceDMA = FALSE;
+	Settings.TraceHDMA = FALSE;
+	Settings.TraceVRAM = FALSE;
+	Settings.TraceUnknownRegisters = FALSE;
+	Settings.TraceDSP = FALSE;
+	Settings.TraceHCEvent = FALSE;
+
+	// Allow these peripherals.
+	Settings.MouseMaster = FALSE;
+	Settings.SuperScopeMaster = FALSE;
+	Settings.JustifierMaster = FALSE;
+	Settings.MultiPlayer5Master = FALSE;
+
+	// Multi-cartridge loading.
+	Settings.Multi = FALSE;
+	Settings.CartAName[0] = '\0';
+	Settings.CartBName[0] = '\0';
+
+	// Network play settings.
+	Settings.NetPlay = FALSE;
+	Settings.NetPlayServer = FALSE;
+	Settings.ServerName[0] = '\0';
+	Settings.Port = 6096;
+
+	// Movie settings.
+	Settings.MovieTruncate = FALSE;
+	Settings.MovieNotifyIgnored = FALSE;
+	Settings.WrongMovieStateProtection = TRUE;
+	Settings.DumpStreams = TRUE;
+	Settings.DumpStreamsMaxFrames = -1;
+
+	// User settings.
 	Settings.SoundPlaybackRate = 44100;
 	Settings.Stereo = TRUE;
-	Settings.SoundBufferSize = 0;
-	Settings.CyclesPercentage = 100;
-	Settings.DisableSoundEcho = FALSE;
-	Settings.APUEnabled = Settings.NextAPUEnabled = TRUE;
-	Settings.H_Max = SNES_CYCLES_PER_SCANLINE;
-	Settings.SkipFrames = AUTO_FRAMERATE;
-	Settings.Shutdown = Settings.ShutdownMaster = TRUE;
-	Settings.FrameTimePAL = 20000;
-	Settings.FrameTimeNTSC = 16667;
-	Settings.FrameTime = Settings.FrameTimeNTSC;
-	// Settings.DisableSampleCaching = FALSE;
-	Settings.DisableMasterVolume = TRUE;
-	Settings.Mouse = FALSE;
-	Settings.SuperScope = FALSE;
-	Settings.MultiPlayer5 = FALSE;
-	//	Settings.ControllerOption = SNES_MULTIPLAYER5;
-	Settings.ControllerOption = 0;
 
-	Settings.InterpolatedSound = TRUE;
-	Settings.StarfoxHack = TRUE;
-	
-	Settings.ForceTransparency = FALSE;
-	Settings.Transparency = TRUE;
-#ifndef FOREVER_16_BIT
-	Settings.SixteenBit = TRUE;
-#endif
-	
-	Settings.SupportHiRes = FALSE;
-	Settings.NetPlay = FALSE;
-	Settings.ServerName [0] = 0;
-	Settings.AutoSaveDelay = 1;
-	Settings.ApplyCheats = TRUE;
-	Settings.TurboMode = FALSE;
-	Settings.TurboSkipFrames = 15;
-	Settings.ThreadSound = FALSE;
-	Settings.SoundSync = 1;
-	Settings.FixFrequency = TRUE;
-	//Settings.NoPatch = true;		
-
-	Settings.SuperFX = TRUE;
-	Settings.DSP1Master = TRUE;
-	Settings.SA1 = TRUE;
-	Settings.C4 = TRUE;
-	Settings.SDD1 = TRUE;
-
-	GFX.Screen = (uint8*) IntermediateScreen;
-	GFX.RealPitch = GFX.Pitch = 256 * sizeof(u16);
-	
-	GFX.SubScreen = (uint8 *)malloc(GFX.RealPitch * 480 * 2); 
-	GFX.ZBuffer =  (uint8 *)malloc(GFX.RealPitch * 480 * 2); 
-	GFX.SubZBuffer = (uint8 *)malloc(GFX.RealPitch * 480 * 2);
-	GFX.Delta = (GFX.SubScreen - GFX.Screen) >> 1;
-	GFX.PPL = GFX.Pitch >> 1;
-	GFX.PPLx2 = GFX.Pitch;
-	GFX.ZPitch = GFX.Pitch >> 1;
-	
-	if (Settings.ForceNoTransparency)
-         Settings.Transparency = FALSE;
-
-#ifndef FOREVER_16_BIT
-	if (Settings.Transparency)
-         Settings.SixteenBit = TRUE;
-#endif
-
-	Settings.HBlankStart = (256 * Settings.H_Max) / SNES_HCOUNTER_MAX;
-
-	if (!Memory.Init () || !S9xInitAPU())
+	if (!Memory.Init() || !S9xInitAPU() || !S9xGraphicsInit() || !S9xInitSound (60, 0))
 	{
-		S9xMessage (0,0,"Failed to init memory");
-		return SAL_ERROR;
-	}
-
-	//S9xInitSound ();
-	
-	//S9xSetRenderPixelFormat (RGB565);
-	S9xSetSoundMute (TRUE);
-
-	if (!S9xGraphicsInit ())
-	{
-         	S9xMessage (0,0,"Failed to init graphics");
 		return SAL_ERROR;
 	}
 
 	return SAL_OK;
 }
-
-void _makepath (char *path, const char *, const char *dir,
-	const char *fname, const char *ext)
-{
-	if (dir && *dir)
-	{
-		strcpy (path, dir);
-		strcat (path, "/");
-	}
-	else
-	*path = 0;
-	strcat (path, fname);
-	if (ext && *ext)
-	{
-		strcat (path, ".");
-		strcat (path, ext);
-	}
-}
-
-void _splitpath (const char *path, char *drive, char *dir, char *fname,
-	char *ext)
-{
-	*drive = 0;
-
-	char *slash = strrchr ((char*)path, '/');
-	if (!slash)
-		slash = strrchr ((char*)path, '\\');
-
-	char *dot = strrchr ((char*)path, '.');
-
-	if (dot && slash && dot < slash)
-		dot = NULL;
-
-	if (!slash)
-	{
-		strcpy (dir, "");
-		strcpy (fname, path);
-		if (dot)
-		{
-			*(fname + (dot - path)) = 0;
-			strcpy (ext, dot + 1);
-		}
-		else
-			strcpy (ext, "");
-	}
-	else
-	{
-		strcpy (dir, path);
-		*(dir + (slash - path)) = 0;
-		strcpy (fname, slash + 1);
-		if (dot)
-		{
-			*(fname + (dot - slash) - 1) = 0;
-			strcpy (ext, dot + 1);
-		}
-		else
-			strcpy (ext, "");
-	}
-} 
-
-extern "C"
-{
 
 int mainEntry(int argc, char* argv[])
 {
@@ -654,7 +740,7 @@ int mainEntry(int argc, char* argv[])
 	if(SnesInit() == SAL_ERROR)
 	{
 		sal_Reset();
-		return 0;
+		return 1;
 	}
 
 	while(1)
@@ -719,21 +805,6 @@ int mainEntry(int argc, char* argv[])
 	S9xDeinitAPU();
 	Memory.Deinit();
 
-	free(GFX.SubZBuffer);
-	free(GFX.ZBuffer);
-	free(GFX.SubScreen);
-	GFX.SubZBuffer=NULL;
-	GFX.ZBuffer=NULL;
-	GFX.SubScreen=NULL;
-
 	sal_Reset();
   	return 0;
 }
-
-}
-
-
-
-
-
-

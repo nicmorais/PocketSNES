@@ -44,7 +44,7 @@ struct SAL_DIR
 
 s32 sal_Init(void);
 s8 *sal_LastErrorGet();
-void sal_LastErrorSet(char *msg);
+void sal_LastErrorSet(const char *msg);
 s32 sal_StringCompare(const char *string1, const char *string2);
 
 u32 sal_VideoInit(u32 bpp, u32 color, u32 refreshRate);
@@ -66,11 +66,6 @@ s32 sal_AudioInit(s32 rate, s32 bits, s32 stereo, s32 Hz);
 void sal_AudioPause(void);
 void sal_AudioResume(void);
 void sal_AudioClose(void);
-void sal_AudioGenerate(u32 samples);
-u32 sal_AudioGetFramesBuffered();
-u32 sal_AudioGetMaxFrames();
-u32 sal_AudioGetSamplesPerFrame();
-u32 sal_AudioGetBytesPerSample();
 
 void sal_AudioSetVolume(s32 l, s32 r);
 u32 sal_AudioRatePrevious(u32 currRate);

@@ -21,11 +21,13 @@ endif
 
 INCLUDE = -I pocketsnes \
 		-I sal/linux/include -I sal/include \
-		-I pocketsnes/include \
+		-I pocketsnes/include -I pocketsnes/include/apu -I pocketsnes/include/unzip \
 		-I menu -I pocketsnes/linux -I pocketsnes/snes9x
 
-CFLAGS = $(INCLUDE) -DRC_OPTIMIZED -D__LINUX__ -D__DINGUX__ \
+CFLAGS = $(INCLUDE) \
 		 -g -O3 -pipe -ffast-math $(SDL_CFLAGS) \
+		 -DRC_OPTIMIZED -D__LINUX__ -D__DINGUX__ -DHAVE_STDINT_H \
+		 -DHAVE_STRINGS_H -DZLIB -DUNZIP_SUPPORT \
 		 -flto
 
 CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
@@ -33,9 +35,13 @@ CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
 LDFLAGS = $(CXXFLAGS) -lpthread -lz -lpng -lm -lgcc $(SDL_LIBS)
 
 # Find all source files
-SOURCE = pocketsnes/snes9x menu sal/linux sal
+SOURCE = pocketsnes/snes9x pocketsnes/snes9x/apu \
+         menu sal/linux sal
 SRC_CPP = $(foreach dir, $(SOURCE), $(wildcard $(dir)/*.cpp))
-SRC_C   = $(foreach dir, $(SOURCE), $(wildcard $(dir)/*.c))
+SRC_C   = $(foreach dir, $(SOURCE), $(wildcard $(dir)/*.c)) \
+          pocketsnes/snes9x/unzip/zip.c \
+          pocketsnes/snes9x/unzip/unzip.c \
+          pocketsnes/snes9x/unzip/ioapi.c
 OBJ_CPP = $(patsubst %.cpp, %.o, $(SRC_CPP))
 OBJ_C   = $(patsubst %.c, %.o, $(SRC_C))
 OBJS    = $(OBJ_CPP) $(OBJ_C)

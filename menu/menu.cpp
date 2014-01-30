@@ -5,7 +5,6 @@
 #include "snes9x.h"
 #include "gfx.h"
 #include "memmap.h"
-#include "soundux.h"
 
 #define MAX_DISPLAY_CHARS			40
 
@@ -845,10 +844,8 @@ static s32 SaveStateSelect(s32 mode)
 			case 3:
 			{
 				LoadStateFile(mSaveState[saveno].fullFilename);
-				Settings.APUEnabled = 0;
-				Settings.NextAPUEnabled = Settings.APUEnabled;					
 				S9xSetSoundMute (TRUE);
-				GFX.Screen = (uint8 *) &mTempFb[0];
+				GFX.Screen = &mTempFb[0];
 				IPPU.RenderThisFrame=TRUE;
 				unsigned int fullScreenSave = mMenuOptions->fullScreen;
 				mMenuOptions->fullScreen = 0;
@@ -890,7 +887,7 @@ static s32 SaveStateSelect(s32 mode)
 	{
 		LoadStateTemp();
 	}
-	GFX.Screen = (uint8 *) sal_VideoGetBuffer();
+	GFX.Screen = (uint16*) sal_VideoGetBuffer();
 	DeleteStateTemp();
 	sal_InputIgnore();
 	return(action);
@@ -1263,7 +1260,7 @@ void MenuInit(const char *systemDir, struct MENU_OPTIONS *menuOptions)
 
 
 
-extern "C" void S9xSaveSRAM(int showWarning);
+void PSNESSaveSRAM(int showWarning);
 
 s32 MenuRun(s8 *romName)
 {
@@ -1288,7 +1285,7 @@ s32 MenuRun(s8 *romName)
 	if((mMenuOptions->autoSaveSram) && (mRomName[0]!=0))
 	{
 		MenuMessageBox("Saving SRAM...","","",MENU_MESSAGE_BOX_MODE_MSG);
-		S9xSaveSRAM(0);
+		PSNESSaveSRAM(0);
 	}
 #endif
 
@@ -1522,7 +1519,7 @@ s32 MenuRun(s8 *romName)
 					if(mRomName[0]!=0)
 					{
 						MenuMessageBox("","","Saving SRAM...",MENU_MESSAGE_BOX_MODE_MSG);
-						S9xSaveSRAM(1);
+						PSNESSaveSRAM(1);
 					}
 					break;
 

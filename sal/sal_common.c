@@ -43,7 +43,7 @@ s8 *sal_LastErrorGet()
 	return &mLastError[0]; 
 }
 
-void sal_LastErrorSet(char *msg)
+void sal_LastErrorSet(const char *msg)
 {
 	strcpy(mLastError,msg);
 }
