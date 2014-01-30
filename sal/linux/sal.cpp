@@ -196,9 +196,15 @@ u32 sal_CpuSpeedPreviousFast(u32 currSpeed)
 
 s32 sal_Init(void)
 {
-	if( SDL_Init( SDL_INIT_EVERYTHING ) == -1 )
+	if( SDL_Init( SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO ) == -1 )
 	{
+		fprintf(stderr, "SDL initialisation failed: %s\n", SDL_GetError());
+		SDL_ClearError();
 		return SAL_ERROR;
+	}
+	else
+	{
+		fprintf(stderr, "SDL initialised successfully\n");
 	}
 	sal_TimerInit(60);
 
@@ -235,19 +241,25 @@ u32 sal_VideoInit(u32 bpp, u32 color, u32 refreshRate)
 #endif
 		);
 
-    	//If there was an error in setting up the screen
-    	if( mScreen == NULL )
-    	{
-		sal_LastErrorSet("SDL_SetVideoMode failed");        	
+	//If there was an error in setting up the screen
+	if( mScreen == NULL )
+	{
+		fprintf(stderr, "SDL_SetVideoMode failed: %s\n", SDL_GetError());
+		SDL_ClearError();
 		return SAL_ERROR;
-    	}
+	}
+	else
+	{
+		fprintf(stderr, "SDL_SetVideoMode completed successfully\n");
+	}
 
     	// lock surface if needed 
 	if (SDL_MUSTLOCK(mScreen)) 
 	{ 
 		if (SDL_LockSurface(mScreen) < 0) 
 		{ 
-			sal_LastErrorSet("unable to lock surface"); 
+			fprintf(stderr, "SDL_LockSurface failed: %s\n", SDL_GetError());
+			SDL_ClearError();
 			return SAL_ERROR;
 		} 
 	}

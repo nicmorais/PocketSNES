@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#define __STDC_FORMAT_MACROS
+#include <stdint.h>
+#include <inttypes.h>
 #include "conffile.h"
 #include "display.h"
 #include "controls.h"
@@ -519,8 +522,8 @@ void S9xLoadSRAM (void)
 	Memory.LoadSRAM (S9xGetFilename (".srm", SRAM_DIR));
 }
 
-static u32 LastAudioRate = 0;
-static u32 LastStereo = 0;
+static u32 LastAudioRate = 0;  // None yet, because audio is not open
+static bool8 LastStereo = FALSE;
 
 static
 int Run(int sound)
@@ -531,27 +534,29 @@ int Run(int sound)
 	done=sal_TimerRead()-1;
 
 	if (sound) {
-		/*
-		Settings.SoundPlaybackRate = mMenuOptions.soundRate;
-		Settings.Stereo = mMenuOptions.stereo ? TRUE : FALSE;
-		*/
-
 		if (LastAudioRate != mMenuOptions.soundRate || LastStereo != mMenuOptions.stereo)
 		{
 			if (LastAudioRate != 0)
 			{
 				sal_AudioClose();
 			}
-			sal_AudioInit(mMenuOptions.soundRate, 16,
-						mMenuOptions.stereo, Memory.ROMFramesPerSecond);
 
-			LastAudioRate = mMenuOptions.soundRate;
+			// DATA RACE AVOIDANCE
+			// While the audio output is closed, there is no chance that the
+			// audio stream will request samples from Snes9x. Update settings.
+			Settings.SoundPlaybackRate = mMenuOptions.soundRate;
+			Settings.Stereo = mMenuOptions.stereo ? TRUE : FALSE;
+			if (!S9xInitSound (60, 0))
+			{
+				fprintf(stderr, "S9xInitSound failed after rate change from %" PRIu32 " to %" PRIu32 "; sound will be muted\n", LastAudioRate, Settings.SoundPlaybackRate);
+			}
+			LastAudioRate = Settings.SoundPlaybackRate;
+			LastStereo = Settings.Stereo;
+
+			sal_AudioInit(Settings.SoundPlaybackRate, Settings.SixteenBitSound ? 16 : 8,
+						Settings.Stereo, Memory.ROMFramesPerSecond);
 		}
-		S9xSetSoundMute (FALSE);
 		sal_AudioResume();
-
-	} else {
-		S9xSetSoundMute (TRUE);
 	}
 
   	while(!mEnterMenu) 
@@ -580,7 +585,6 @@ int Run(int sound)
 	if (sound)
 	{
 		sal_AudioPause();
-		S9xSetSoundMute(TRUE);
 	}
 
 	mEnterMenu=0;
@@ -616,7 +620,6 @@ int SnesRomLoad()
 	
 	MenuMessageBox("Done loading the ROM",mRomName,"",MENU_MESSAGE_BOX_MODE_MSG);
 
-	S9xReset();
 	S9xLoadSRAM();
 	return SAL_OK;
 }
@@ -648,7 +651,6 @@ int SnesInit()
 	Settings.SixteenBitSound = TRUE;
 	Settings.SoundInputRate = 32000;
 	Settings.ReverseStereo = FALSE;
-	S9xSetSoundMute(TRUE);
 	Settings.SupportHiRes = FALSE;
 	GFX.Screen = (uint16*) malloc(SNES_WIDTH * SNES_HEIGHT_EXTENDED * sizeof(uint16));
 	GFX.Pitch = SNES_WIDTH * sizeof(uint16);
@@ -713,12 +715,37 @@ int SnesInit()
 	Settings.SoundPlaybackRate = 44100;
 	Settings.Stereo = TRUE;
 
-	if (!Memory.Init() || !S9xInitAPU() || !S9xGraphicsInit() || !S9xInitSound (60, 0))
+	if (!Memory.Init())
 	{
+		fprintf(stderr, "Snes9x main memory allocation error\n");
 		return SAL_ERROR;
 	}
+	if (!S9xInitAPU())
+	{
+		fprintf(stderr, "Snes9x APU initialisation failed\n");
+		goto cleanup_memory;
+	}
+	if (!S9xGraphicsInit())
+	{
+		fprintf(stderr, "Snes9x graphics initialisation failed\n");
+		goto cleanup_apu;
+	}
+	if (!S9xInitSound (60, 0))
+	{
+		fprintf(stderr, "Snes9x sound memory allocation error\n");
+		goto cleanup_graphics;
+	}
+	S9xSetSoundMute (FALSE);
 
 	return SAL_OK;
+
+cleanup_graphics:
+	S9xGraphicsDeinit();
+cleanup_apu:
+	S9xDeinitAPU();
+cleanup_memory:
+	Memory.Deinit();
+	return SAL_ERROR;
 }
 
 int mainEntry(int argc, char* argv[])
@@ -727,8 +754,13 @@ int mainEntry(int argc, char* argv[])
 
 	s32 event=EVENT_NONE;
 
-	sal_Init();
-	sal_VideoInit(16,SAL_RGB(0,0,0),Memory.ROMFramesPerSecond);
+	if (!sal_Init())
+		return 1;
+	if (!sal_VideoInit(16,SAL_RGB(0,0,0),Memory.ROMFramesPerSecond))
+	{
+		sal_Reset();
+		return 1;
+	}
 
 	mRomName[0]=0;
 	if (argc >= 2) 
