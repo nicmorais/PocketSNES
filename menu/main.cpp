@@ -482,7 +482,7 @@ const char * S9xStringInput (const char *message)
 
 void S9xSyncSpeed(void)
 {
-      //S9xMessage (0,0,"sync speed");
+ 	S9xSyncSound();
 }
 
 void PSNESForceSaveSRAM (void)
@@ -506,6 +506,11 @@ void PSNESSaveSRAM (int showWarning)
 	{
 		MenuMessageBox("SRAM saving ignored","No changes have been made to SRAM","",MENU_MESSAGE_BOX_MODE_MSG);
 	}
+}
+
+bool8 PSNESInitSound()
+{
+	return S9xInitSound(60, 20);
 }
 
 bool8 S9xOpenSoundDevice()
@@ -534,7 +539,6 @@ static
 int Run(int sound)
 {
   	int skip=0, done=0, doneLast=0,aim=0,i;
-	Settings.SoundSync = mMenuOptions.soundSync;
 	sal_TimerInit(Settings.FrameTime);
 	done=sal_TimerRead()-1;
 
@@ -551,7 +555,7 @@ int Run(int sound)
 			// audio stream will request samples from Snes9x. Update settings.
 			Settings.SoundPlaybackRate = mMenuOptions.soundRate;
 			Settings.Stereo = mMenuOptions.stereo ? TRUE : FALSE;
-			if (!S9xInitSound (60, 0))
+			if (!PSNESInitSound())
 			{
 				fprintf(stderr, "S9xInitSound failed after rate change from %" PRIu32 " to %" PRIu32 "; sound will be muted\n", LastAudioRate, Settings.SoundPlaybackRate);
 			}
@@ -735,7 +739,7 @@ int SnesInit()
 		fprintf(stderr, "Snes9x graphics initialisation failed\n");
 		goto cleanup_apu;
 	}
-	if (!S9xInitSound (60, 0))
+	if (!PSNESInitSound())
 	{
 		fprintf(stderr, "Snes9x sound memory allocation error\n");
 		goto cleanup_graphics;
