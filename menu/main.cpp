@@ -91,8 +91,13 @@ bool8 S9xOpenSnapshotFile (const char *fname, bool8 read_only, STREAM *file)
 	}
 	else
 	{
-		if ((*file = OPEN_STREAM(fname,"w+b")))
+#ifdef ZLIB
+		if ((*file = OPEN_STREAM(fname,"wb1h"))) /* level 1, Huffman only */
 			return(TRUE);
+#else
+		if ((*file = OPEN_STREAM(fname,"wb")))
+			return(TRUE);
+#endif
 	}
 
 	return (FALSE);	
