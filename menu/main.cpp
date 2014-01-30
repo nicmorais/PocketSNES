@@ -706,7 +706,7 @@ int SnesInit()
 	Settings.MovieTruncate = FALSE;
 	Settings.MovieNotifyIgnored = FALSE;
 	Settings.WrongMovieStateProtection = TRUE;
-	Settings.DumpStreams = TRUE;
+	Settings.DumpStreams = FALSE;
 	Settings.DumpStreamsMaxFrames = -1;
 
 	// User settings.
