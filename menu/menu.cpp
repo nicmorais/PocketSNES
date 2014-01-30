@@ -1,4 +1,5 @@
 
+#include "apu.h"
 #include "sal.h"
 #include "menu.h"
 #include "snapshot.h"
