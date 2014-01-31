@@ -21,9 +21,6 @@
 #include "snapshot.h"
 #include "scaler.h"
 
-#define SNES_SCREEN_WIDTH  256
-#define SNES_SCREEN_HEIGHT 192
-
 static struct MENU_OPTIONS mMenuOptions;
 static int mEmuScreenHeight;
 static int mEmuScreenWidth;
