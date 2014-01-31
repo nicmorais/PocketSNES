@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #define __STDC_FORMAT_MACROS
 #include <stdint.h>
 #include <inttypes.h>
@@ -499,9 +500,123 @@ const char * S9xStringInput (const char *message)
 	return NULL;
 }
 
+#define TIMER_DIFF(a, b) (((int64_t) ((a).tv_sec - (b).tv_sec) * 1000000) + (a).tv_usec - (b).tv_usec)
+static struct timeval NextFrameTime = { .tv_sec = 0, .tv_usec = 0 };
+#define MAX_AUDIO_FRAMESKIP 9
+
 void S9xSyncSpeed(void)
 {
- 	S9xSyncSound();
+	struct timeval Now;
+	if (Settings.HighSpeedSeek > 0)
+	{
+		Settings.HighSpeedSeek--;
+		IPPU.RenderThisFrame = FALSE;
+		IPPU.SkippedFrames = 0;
+
+		gettimeofday (&Now, NULL);
+		NextFrameTime = Now;
+	}
+	else if (Settings.TurboMode)
+	{
+		if (++IPPU.FrameSkip >= Settings.TurboSkipFrames)
+		{
+			IPPU.FrameSkip = 0;
+			IPPU.SkippedFrames = 0;
+			IPPU.RenderThisFrame = TRUE;
+		}
+		else
+		{
+			IPPU.SkippedFrames++;
+			IPPU.RenderThisFrame = FALSE;
+		}
+	}
+	else
+	{
+		gettimeofday (&Now, NULL);
+
+		if (NextFrameTime.tv_sec == 0)
+		{
+			NextFrameTime = Now;
+		}
+
+		if (Settings.SkipFrames == AUTO_FRAMERATE)
+		{
+			uint64_t Lag = TIMER_DIFF (Now, NextFrameTime);
+
+			/* We compensate for the frame time by a frame in case it's just a CPU
+			 * discrepancy. We can recover lost time in the next frame anyway. */
+			if (Lag > Settings.FrameTime)
+			{
+				if (Lag > Settings.FrameTime * 5
+				 || IPPU.SkippedFrames >= MAX_AUDIO_FRAMESKIP)
+				{
+					/* Running way too slowly */
+					NextFrameTime = Now;
+					IPPU.RenderThisFrame = TRUE;
+					IPPU.SkippedFrames = 0;
+				}
+				else
+				{
+					IPPU.RenderThisFrame = FALSE;
+					IPPU.SkippedFrames++;
+				}
+			}
+			else
+			{
+				IPPU.RenderThisFrame = TRUE;
+				IPPU.SkippedFrames = 0;
+			}
+		}
+		else
+		{
+			if (++IPPU.SkippedFrames >= Settings.SkipFrames + 1)
+			{
+				IPPU.RenderThisFrame = TRUE;
+				IPPU.SkippedFrames = 0;
+			}
+			else
+			{
+				IPPU.RenderThisFrame = FALSE;
+			}
+		}
+	}
+
+	// After all that, what time is it?
+	gettimeofday (&Now, NULL);
+
+	S9xSyncSound(); // Ensure no overruns even when not syncing to sound
+
+	if (TIMER_DIFF (NextFrameTime, Now) < -500000)
+	{
+		/* We were paused. */
+		NextFrameTime = Now;
+	}
+
+	{
+		int64_t TimeLeft;
+		while ((TimeLeft = TIMER_DIFF (NextFrameTime, Now)) > 0)
+		{
+			if (TimeLeft > 500000)
+			{
+				/* We were paused. */
+				NextFrameTime = Now;
+				break;
+			}
+
+			usleep (TimeLeft);
+
+			// After that, what time is it?
+			gettimeofday (&Now, NULL);
+		}
+	}
+
+	NextFrameTime.tv_usec += Settings.FrameTime;
+
+	if (NextFrameTime.tv_usec >= 1000000)
+	{
+		NextFrameTime.tv_sec += NextFrameTime.tv_usec / 1000000;
+		NextFrameTime.tv_usec %= 1000000;
+	}
 }
 
 void PSNESForceSaveSRAM (void)
@@ -558,6 +673,9 @@ static
 int Run(int sound)
 {
   	int skip=0, done=0, doneLast=0,aim=0,i;
+	Settings.SkipFrames = (mMenuOptions.frameSkip == 0)
+		? AUTO_FRAMERATE
+		: mMenuOptions.frameSkip - 1;
 	sal_TimerInit(Settings.FrameTime);
 	done=sal_TimerRead()-1;
 
@@ -589,25 +707,9 @@ int Run(int sound)
 
   	while(!mEnterMenu) 
   	{
-		for (i=0;i<10;i++)
-		{
-			aim=sal_TimerRead();
-			if (done < aim)
-			{
-				done++;
-				if (mMenuOptions.frameSkip == 0) //Auto
-					IPPU.RenderThisFrame = (done >= aim);
-				else if ((IPPU.RenderThisFrame = (--skip <= 0)))
-					skip = mMenuOptions.frameSkip;
-
-				//Run SNES for one glorious frame
-				S9xMainLoop ();
-				PSNESReadJoypad ();
-			}
-			if (done>=aim) break; // Up to date now
-			if (mEnterMenu) break;
-		}
-		done=aim; // Make sure up to date
+		//Run SNES for one glorious frame
+		S9xMainLoop ();
+		PSNESReadJoypad ();
   	}
 
 	if (sound)
