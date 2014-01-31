@@ -22,6 +22,12 @@ endif
 INCLUDE = -I pocketsnes \
 		-I sal/linux/include -I sal/include \
 		-I pocketsnes/include -I pocketsnes/include/apu -I pocketsnes/include/unzip \
+		-I pocketsnes/include/apu/bapu \
+		-I pocketsnes/include/apu/bapu/dsp \
+		-I pocketsnes/include/apu/bapu/smp \
+		-I pocketsnes/include/apu/bapu/smp/core \
+		-I pocketsnes/include/apu/bapu/smp/debugger \
+		-I pocketsnes/include/apu/bapu/snes \
 		-I menu -I pocketsnes/linux -I pocketsnes/snes9x
 
 CFLAGS = $(INCLUDE) \
@@ -36,6 +42,11 @@ LDFLAGS = $(CXXFLAGS) -lpthread -lz -lpng -lm -lgcc $(SDL_LIBS)
 
 # Find all source files
 SOURCE = pocketsnes/snes9x pocketsnes/snes9x/apu \
+		 pocketsnes/snes9x/apu/bapu/dsp \
+		 pocketsnes/snes9x/apu/bapu/smp \
+		 pocketsnes/snes9x/apu/bapu/smp/core \
+		 pocketsnes/snes9x/apu/bapu/smp/debugger \
+		 pocketsnes/snes9x/apu/bapu/dsp \
          menu sal/linux sal
 SRC_CPP = $(foreach dir, $(SOURCE), $(wildcard $(dir)/*.cpp))
 SRC_C   = $(foreach dir, $(SOURCE), $(wildcard $(dir)/*.c)) \
