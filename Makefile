@@ -34,6 +34,7 @@ CFLAGS = $(INCLUDE) \
 		 -g -O3 -pipe -ffast-math $(SDL_CFLAGS) \
 		 -DRC_OPTIMIZED -D__LINUX__ -D__DINGUX__ -DHAVE_STDINT_H \
 		 -DHAVE_STRINGS_H -DZLIB -DUNZIP_SUPPORT \
+		 -DBLARGG_NONPORTABLE \
 		 -flto
 
 CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
