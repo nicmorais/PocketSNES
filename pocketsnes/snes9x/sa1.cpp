@@ -401,34 +401,25 @@ void S9xSetSA1 (uint8 byte, uint32 address)
 				S9xSA1SetPCBase(SA1Registers.PBPC);
 			}
 
-			// SA-1 IRQ control
-			if (byte & 0x80)
-			{
-				Memory.FillRAM[0x2301] |= 0x80;
-				if (Memory.FillRAM[0x220a] & 0x80)
-					Memory.FillRAM[0x220b] &= ~0x80;
-			}
-
-			// SA-1 NMI control
-			if (byte & 0x10)
-			{
-				Memory.FillRAM[0x2301] |= 0x10;
-				if (Memory.FillRAM[0x220a] & 0x10)
-					Memory.FillRAM[0x220b] &= ~0x10;
-			}
+			// The port write controls the following interrupts
+			// if the corresponding bit is set:
+			// 0x80  SA-1 IRQ control
+			// 0x10  SA-1 NMI control
+			Memory.FillRAM[0x2301] |= byte & 0x90;
+			Memory.FillRAM[0x220B] &= ~(Memory.FillRAM[0x220A] & byte & 0x90);
 
 			break;
 
 		case 0x2201: // S-CPU interrupt enable
 			// S-CPU IRQ enable
-			if (((byte ^ Memory.FillRAM[0x2201]) & 0x80) && (Memory.FillRAM[0x2300] & byte & 0x80))
+			if (((byte ^ Memory.FillRAM[0x2201]) & 0x80) & (Memory.FillRAM[0x2300] & byte & 0x80))
 			{
 				Memory.FillRAM[0x2202] &= ~0x80;
 				CPU.IRQExternal = TRUE;
 			}
 
 			// S-CPU CHDMA IRQ enable
-			if (((byte ^ Memory.FillRAM[0x2201]) & 0x20) && (Memory.FillRAM[0x2300] & byte & 0x20))
+			if (((byte ^ Memory.FillRAM[0x2201]) & 0x20) & (Memory.FillRAM[0x2300] & byte & 0x20))
 			{
 				Memory.FillRAM[0x2202] &= ~0x20;
 				CPU.IRQExternal = TRUE;
@@ -437,13 +428,11 @@ void S9xSetSA1 (uint8 byte, uint32 address)
 			break;
 
 		case 0x2202: // S-CPU interrupt clear
-			// S-CPU IRQ clear
-			if (byte & 0x80)
-				Memory.FillRAM[0x2300] &= ~0x80;
-
-			// S-CPU CHDMA IRQ clear
-			if (byte & 0x20)
-				Memory.FillRAM[0x2300] &= ~0x20;
+			// The port write clears the following interrupts
+			// if the corresponding bit is set:
+			// 0x80  S-CPU IRQ clear
+			// 0x10  S-CPU CHDMA IRQ clear
+			Memory.FillRAM[0x2300] &= ~(byte & 0xA0);
 
 			if (!(Memory.FillRAM[0x2300] & 0xa0))
 				CPU.IRQExternal = FALSE;
@@ -476,40 +465,28 @@ void S9xSetSA1 (uint8 byte, uint32 address)
 			break;
 
 		case 0x220a: // SA-1 interrupt enable
-			// SA-1 IRQ enable
-			if (((byte ^ Memory.FillRAM[0x220a]) & 0x80) && (Memory.FillRAM[0x2301] & byte & 0x80))
-				Memory.FillRAM[0x220b] &= ~0x80;
+			// The port write enables the following interrupts
+			// if the corresponding bit is set:
+			// 0x80  SA-1 IRQ enable
+			// 0x40  SA-1 timer IRQ enable
+			// 0x20  SA-1 DMA IRQ enable
+			// 0x10  SA-1 NMI enable
 
-			// SA-1 timer IRQ enable
-			if (((byte ^ Memory.FillRAM[0x220a]) & 0x40) && (Memory.FillRAM[0x2301] & byte & 0x40))
-				Memory.FillRAM[0x220b] &= ~0x40;
-
-			// SA-1 DMA IRQ enable
-			if (((byte ^ Memory.FillRAM[0x220a]) & 0x20) && (Memory.FillRAM[0x2301] & byte & 0x20))
-				Memory.FillRAM[0x220b] &= ~0x20;
-
-			// SA-1 NMI enable
-			if (((byte ^ Memory.FillRAM[0x220a]) & 0x10) && (Memory.FillRAM[0x2301] & byte & 0x10))
-				Memory.FillRAM[0x220b] &= ~0x10;
+			Memory.FillRAM[0x220B] &= ~(
+				((byte ^ Memory.FillRAM[0x220A]) & (Memory.FillRAM[0x2301] & byte)) & 0xF0
+			);
 
 			break;
 
 		case 0x220b: // SA-1 interrupt clear
-			// SA-1 IRQ clear
-			if (byte & 0x80)
-				Memory.FillRAM[0x2301] &= ~0x80;
+			// The port write clears the following interrupts
+			// if the corresponding bit is set:
+			// 0x80  SA-1 IRQ clear
+			// 0x40  SA-1 timer IRQ clear
+			// 0x20  SA-1 DMA IRQ clear
+			// 0x10  SA-1 NMI clear
 
-			// SA-1 timer IRQ clear
-			if (byte & 0x40)
-				Memory.FillRAM[0x2301] &= ~0x40;
-
-			// SA-1 DMA IRQ clear
-			if (byte & 0x20)
-				Memory.FillRAM[0x2301] &= ~0x20;
-
-			// SA-1 NMI clear
-			if (byte & 0x10)
-				Memory.FillRAM[0x2301] &= ~0x10;
+			Memory.FillRAM[0x2301] &= ~(byte & 0xF0);
 
 			break;
 
