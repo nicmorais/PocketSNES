@@ -176,22 +176,14 @@
  ***********************************************************************************/
 
 
-#include "snes9x.h"
-#include "memmap.h"
-#include "cpuops.h"
-#include "dma.h"
-#include "apu/apu.h"
-#include "fxemu.h"
-#include "snapshot.h"
-#ifdef DEBUGGER
-#include "debug.h"
-#include "missing.h"
-#endif
+// This file includes itself to get versions of the main loop that depend on
+// the execution state of the SA-1 chip.
 
-static inline void S9xReschedule (void);
+// Look for the comment starting with 'Self-inclusion' below.
 
+#ifdef _MAIN_LOOP_NAME_
 
-void S9xMainLoop (void)
+static void _MAIN_LOOP_NAME_ (void)
 {
 	for (;;)
 	{
@@ -294,8 +286,9 @@ void S9xMainLoop (void)
 		Registers.PCw++;
 		(*Opcodes[Op].S9xOpcode)();
 
-		if (Settings.SA1)
-			S9xSA1MainLoop();
+#ifdef _MAIN_LOOP_SA1_
+		S9xSA1MainLoop();
+#endif
 	}
 
 	S9xPackStatus();
@@ -308,6 +301,42 @@ void S9xMainLoop (void)
 		S9xSyncSpeed();
 		CPU.Flags &= ~SCAN_KEYS_FLAG;
 	}
+}
+
+#else /* _CPUEXEC_CPP_MAIN_LOOPS_ */
+
+#include "snes9x.h"
+#include "memmap.h"
+#include "cpuops.h"
+#include "dma.h"
+#include "apu/apu.h"
+#include "fxemu.h"
+#include "snapshot.h"
+#ifdef DEBUGGER
+#include "debug.h"
+#include "missing.h"
+#endif
+
+static inline void S9xReschedule (void);
+
+// Self-inclusion: Get our main loops.
+
+#define  _MAIN_LOOP_NAME_ S9xMainLoop_65C816
+#include "cpuexec.cpp"
+#undef   _MAIN_LOOP_NAME_
+
+#define  _MAIN_LOOP_NAME_ S9xMainLoop_65C816_SA1
+#define  _MAIN_LOOP_SA1_
+#include "cpuexec.cpp"
+#undef   _MAIN_LOOP_SA1_
+#undef   _MAIN_LOOP_NAME_
+
+void S9xMainLoop (void)
+{
+	if (Settings.SA1)
+		S9xMainLoop_65C816_SA1();
+	else
+		S9xMainLoop_65C816();
 }
 
 static inline void S9xReschedule (void)
@@ -551,3 +580,5 @@ void S9xDoHEventProcessing (void)
 			eventname[CPU.WhichEvent], CPU.NextEvent, CPU.Cycles);
 #endif
 }
+
+#endif /* _CPUEXEC_CPP_MAIN_LOOPS_ */
