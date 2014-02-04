@@ -322,6 +322,7 @@ void sal_Reset(void)
 {
 	sal_AudioClose();
 	SDL_Quit();
+	fprintf(stderr, "SDL finalised successfully\n");
 }
 
 int mainEntry(int argc, char *argv[]);

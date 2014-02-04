@@ -779,7 +779,7 @@ int SnesInit()
 	Settings.SoundInputRate = 32000;
 	Settings.ReverseStereo = FALSE;
 	Settings.SupportHiRes = FALSE;
-	GFX.Screen = (uint16*) malloc(SNES_WIDTH * SNES_HEIGHT_EXTENDED * sizeof(uint16));
+	GFX.Screen = IntermediateScreen;
 	GFX.Pitch = SNES_WIDTH * sizeof(uint16);
 	Settings.OpenGLEnable = FALSE;
 	Settings.Transparency = TRUE;
