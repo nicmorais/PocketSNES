@@ -741,42 +741,27 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 	uint8			*pCache; \
 	register int32	l; \
 	register uint8	*bp, Pix; \
+	register int8	bpDelta; \
 	\
 	GET_CACHED_TILE(); \
 	if (IS_BLANK_TILE()) \
 		return; \
 	SELECT_PALETTE(); \
 	\
-	if (!(Tile & (V_FLIP | H_FLIP))) \
-	{ \
-		bp = pCache + BPSTART; \
-		for (l = LineCount; l > 0; l--, bp += 8 * PITCH, Offset += GFX.PPL) \
-		{ \
-			uint8 n; \
-			for (n = 0; n < 8; n++) \
-			{ \
-				DRAW_PIXEL(n, Pix = bp[n]); \
-			} \
-		} \
-	} \
-	else \
 	if (!(Tile & V_FLIP)) \
 	{ \
 		bp = pCache + BPSTART; \
-		for (l = LineCount; l > 0; l--, bp += 8 * PITCH, Offset += GFX.PPL) \
-		{ \
-			uint8 n; \
-			for (n = 0; n < 8; n++) \
-			{ \
-				DRAW_PIXEL(n, Pix = bp[7 - n]); \
-			} \
-		} \
+		bpDelta = 8 * PITCH; \
 	} \
 	else \
-	if (!(Tile & H_FLIP)) \
 	{ \
 		bp = pCache + 56 - BPSTART; \
-		for (l = LineCount; l > 0; l--, bp -= 8 * PITCH, Offset += GFX.PPL) \
+		bpDelta = -8 * PITCH; \
+	} \
+	\
+	if (!(Tile & H_FLIP)) \
+	{ \
+		for (l = LineCount; l > 0; l--, bp += bpDelta, Offset += GFX.PPL) \
 		{ \
 			uint8 n; \
 			for (n = 0; n < 8; n++) \
@@ -787,8 +772,7 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 	} \
 	else \
 	{ \
-		bp = pCache + 56 - BPSTART; \
-		for (l = LineCount; l > 0; l--, bp -= 8 * PITCH, Offset += GFX.PPL) \
+		for (l = LineCount; l > 0; l--, bp += bpDelta, Offset += GFX.PPL) \
 		{ \
 			uint8 n; \
 			for (n = 0; n < 8; n++) \
@@ -820,44 +804,27 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 	uint8			*pCache; \
 	register int32	l; \
 	register uint8	*bp, Pix, w; \
+	register int8	bpDelta; \
 	\
 	GET_CACHED_TILE(); \
 	if (IS_BLANK_TILE()) \
 		return; \
 	SELECT_PALETTE(); \
 	\
-	if (!(Tile & (V_FLIP | H_FLIP))) \
-	{ \
-		bp = pCache + BPSTART; \
-		for (l = LineCount; l > 0; l--, bp += 8 * PITCH, Offset += GFX.PPL) \
-		{ \
-			w = Width; \
-			uint8 n = StartPixel; \
-			do { \
-				DRAW_PIXEL(n, Pix = bp[n]); \
-				n++; \
-			} while (--w > 0); \
-		} \
-	} \
-	else \
 	if (!(Tile & V_FLIP)) \
 	{ \
 		bp = pCache + BPSTART; \
-		for (l = LineCount; l > 0; l--, bp += 8 * PITCH, Offset += GFX.PPL) \
-		{ \
-			w = Width; \
-			uint8 n = StartPixel; \
-			do { \
-				DRAW_PIXEL(n, Pix = bp[7 - n]); \
-				n++; \
-			} while (--w > 0); \
-		} \
+		bpDelta = 8 * PITCH; \
 	} \
 	else \
-	if (!(Tile & H_FLIP)) \
 	{ \
 		bp = pCache + 56 - BPSTART; \
-		for (l = LineCount; l > 0; l--, bp -= 8 * PITCH, Offset += GFX.PPL) \
+		bpDelta = -8 * PITCH; \
+	} \
+	\
+	if (!(Tile & H_FLIP)) \
+	{ \
+		for (l = LineCount; l > 0; l--, bp += bpDelta, Offset += GFX.PPL) \
 		{ \
 			w = Width; \
 			uint8 n = StartPixel; \
@@ -869,8 +836,7 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 	} \
 	else \
 	{ \
-		bp = pCache + 56 - BPSTART; \
-		for (l = LineCount; l > 0; l--, bp -= 8 * PITCH, Offset += GFX.PPL) \
+		for (l = LineCount; l > 0; l--, bp += bpDelta, Offset += GFX.PPL) \
 		{ \
 			w = Width; \
 			uint8 n = StartPixel; \
