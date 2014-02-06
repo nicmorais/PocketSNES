@@ -1761,12 +1761,6 @@ int S9xUnfreezeFromStream (STREAM stream)
 
 		S9xControlPostLoadState(&ctl_snap);
 
-		if (local_superfx)
-		{
-			GSU.pfPlot = fx_PlotTable[GSU.vMode];
-			GSU.pfRpix = fx_PlotTable[GSU.vMode + 5];
-		}
-
 		if (local_sa1 && local_sa1_registers)
 		{
 			SA1.Flags |= sa1_old_flags & TRACE_FLAG;
