@@ -259,12 +259,12 @@ static void _MAIN_LOOP_NAME_ (void)
 		register uint8				Op;
 		register struct	SOpcodes	*Opcodes;
 
+		CPU.PrevCycles = CPU.Cycles;
+
 		if (CPU.PCBase)
 		{
 			Op = CPU.PCBase[Registers.PCw];
-			CPU.PrevCycles = CPU.Cycles;
 			CPU.Cycles += CPU.MemSpeed;
-			S9xCheckInterrupts();
 			Opcodes = ICPU.S9xOpcodes;
 		}
 		else
@@ -285,6 +285,10 @@ static void _MAIN_LOOP_NAME_ (void)
 
 		Registers.PCw++;
 		(*Opcodes[Op].S9xOpcode)();
+
+		S9xCheckInterrupts();
+		while (CPU.Cycles >= CPU.NextEvent)
+			S9xDoHEventProcessing();
 
 #ifdef _MAIN_LOOP_SA1_
 		S9xSA1MainLoop();
