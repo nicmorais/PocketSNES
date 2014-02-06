@@ -347,7 +347,6 @@ void S9xSetPPU (uint8 Byte, uint16 Address)
 
 					if (PPU.Brightness != (Byte & 0xf))
 					{
-						IPPU.ColorsChanged = TRUE;
 						IPPU.DirectColourMapsNeedRebuild = TRUE;
 						PPU.Brightness = Byte & 0xf;
 						S9xFixColourBrightness();
@@ -357,7 +356,6 @@ void S9xSetPPU (uint8 Byte, uint16 Address)
 
 					if ((Memory.FillRAM[0x2100] & 0x80) != (Byte & 0x80))
 					{
-						IPPU.ColorsChanged = TRUE;
 						PPU.ForcedBlanking = (Byte >> 7) & 1;
 					}
 				}
@@ -1944,7 +1942,6 @@ void S9xSoftResetPPU (void)
 
 	for (int c = 0; c < 2; c++)
 		memset(&IPPU.Clip[c], 0, sizeof(struct ClipData));
-	IPPU.ColorsChanged = TRUE;
 	IPPU.OBJChanged = TRUE;
 	IPPU.DirectColourMapsNeedRebuild = TRUE;
 	ZeroMemory(IPPU.TileCached[TILE_2BIT], MAX_2BIT_TILES);

@@ -410,23 +410,14 @@ void S9xEndScreenRefresh (void)
 	{
 		FLUSH_REDRAW();
 
+		S9xControlEOF();
+
 		if (GFX.DoInterlace && GFX.InterlaceFrame == 0)
 		{
-			S9xControlEOF();
 			S9xContinueUpdate(IPPU.RenderedScreenWidth, IPPU.RenderedScreenHeight);
 		}
 		else
 		{
-			if (IPPU.ColorsChanged)
-			{
-				uint32 saved = PPU.CGDATA[0];
-				IPPU.ColorsChanged = FALSE;
-				S9xSetPalette();
-				PPU.CGDATA[0] = saved;
-			}
-
-			S9xControlEOF();
-
 			if (Settings.TakeScreenshot)
 				S9xDoScreenshot(IPPU.RenderedScreenWidth, IPPU.RenderedScreenHeight);
 
