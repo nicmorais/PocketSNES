@@ -685,7 +685,7 @@ static FreezeData	SnapSA1[] =
 };
 
 #undef STRUCT
-#define STRUCT	struct SSA1Registers
+#define STRUCT	struct SRegisters
 
 static FreezeData	SnapSA1Registers[] =
 {

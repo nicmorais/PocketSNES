@@ -179,18 +179,6 @@
 #ifndef _SA1_H_
 #define _SA1_H_
 
-struct SSA1Registers
-{
-	uint8	DB;
-	pair	P;
-	pair	A;
-	pair	D;
-	pair	S;
-	pair	X;
-	pair	Y;
-	PC_t	PC;
-};
-
 struct SSA1
 {
 	struct SOpcodes	*S9xOpcodes;
@@ -244,7 +232,7 @@ struct SSA1
 #define SA1ClearFlags(f)	(SA1Registers.P.W &= ~(f))
 #define SA1CheckFlag(f)		(SA1Registers.PL & (f))
 
-extern struct SSA1Registers	SA1Registers;
+extern struct SRegisters	SA1Registers;
 extern struct SSA1			SA1;
 extern uint8				SA1OpenBus;
 extern struct SOpcodes		S9xSA1OpcodesM1X1[256];

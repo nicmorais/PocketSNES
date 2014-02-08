@@ -209,7 +209,7 @@ struct SDSP2			DSP2;
 struct SDSP3			DSP3;
 struct SDSP4			DSP4;
 struct SSA1				SA1;
-struct SSA1Registers	SA1Registers;
+struct SRegisters		SA1Registers;
 struct FxRegs_s			GSU;
 struct FxInfo_s			SuperFX;
 struct SST010			ST010;
