@@ -1045,7 +1045,7 @@ void S9xInitBSX (void)
 		Memory.LoROM = TRUE;
 		Memory.HiROM = FALSE;
 
-		memmove(BIOSROM, Memory.ROM, BIOS_SIZE);
+		memcpy(BIOSROM, Memory.ROM, BIOS_SIZE);
 
 		FlashMode = FALSE;
 		FlashSize = FLASH_SIZE;

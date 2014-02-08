@@ -976,9 +976,9 @@ static void S9xDeinterleaveType1 (int size, uint8 *base)
 			{
 				if (blocks[j] == i)
 				{
-					memmove(tmp, &base[blocks[j] * 0x8000], 0x8000);
+					memcpy (tmp, &base[blocks[j] * 0x8000], 0x8000);
 					memmove(&base[blocks[j] * 0x8000], &base[blocks[i] * 0x8000], 0x8000);
-					memmove(&base[blocks[i] * 0x8000], tmp, 0x8000);
+					memcpy (&base[blocks[i] * 0x8000], tmp, 0x8000);
 					uint8	b = blocks[j];
 					blocks[j] = blocks[i];
 					blocks[i] = b;
@@ -1017,9 +1017,9 @@ static void S9xDeinterleaveType2 (int size, uint8 *base)
 			{
 				if (blocks[j] == i)
 				{
-					memmove(tmp, &base[blocks[j] * 0x10000], 0x10000);
+					memcpy (tmp, &base[blocks[j] * 0x10000], 0x10000);
 					memmove(&base[blocks[j] * 0x10000], &base[blocks[i] * 0x10000], 0x10000);
-					memmove(&base[blocks[i] * 0x10000], tmp, 0x10000);
+					memcpy (&base[blocks[i] * 0x10000], tmp, 0x10000);
 					uint8	b = blocks[j];
 					blocks[j] = blocks[i];
 					blocks[i] = b;
@@ -1044,10 +1044,10 @@ static void S9xDeinterleaveGD24 (int size, uint8 *base)
 	uint8	*tmp = (uint8 *) malloc(0x80000);
 	if (tmp)
 	{
-		memmove(tmp, &base[0x180000], 0x80000);
-		memmove(&base[0x180000], &base[0x200000], 0x80000);
-		memmove(&base[0x200000], &base[0x280000], 0x80000);
-		memmove(&base[0x280000], tmp, 0x80000);
+		memcpy(tmp, &base[0x180000], 0x80000);
+		memcpy(&base[0x180000], &base[0x200000], 0x80000);
+		memcpy(&base[0x200000], &base[0x280000], 0x80000);
+		memcpy(&base[0x280000], tmp, 0x80000);
 
 		free(tmp);
 
@@ -1738,9 +1738,9 @@ bool8 CMemory::LoadROMInt (int32 ROMfillSize)
 		if (tmp)
 		{
 			S9xMessage(S9X_INFO, S9X_ROM_INTERLEAVED_INFO, "Fixing swapped ExHiROM...");
-			memmove(tmp, ROM, CalculatedSize - 0x400000);
+			memcpy (tmp, ROM, CalculatedSize - 0x400000);
 			memmove(ROM, ROM + CalculatedSize - 0x400000, 0x400000);
-			memmove(ROM + 0x400000, tmp, CalculatedSize - 0x400000);
+			memcpy (ROM + 0x400000, tmp, CalculatedSize - 0x400000);
 			free(tmp);
 		}
 	}
@@ -2317,7 +2317,7 @@ void CMemory::ParseSNESHeader (uint8 *RomHeader)
 	ROMChecksum           = RomHeader[0x2E] + (RomHeader[0x2F] << 8);
 	ROMComplementChecksum = RomHeader[0x2C] + (RomHeader[0x2D] << 8);
 
-	memmove(ROMId, &RomHeader[0x02], 4);
+	memcpy(ROMId, &RomHeader[0x02], 4);
 
 	if (RomHeader[0x2A] != 0x33)
 		CompanyId = ((RomHeader[0x2A] >> 4) & 0x0F) * 36 + (RomHeader[0x2A] & 0x0F);
@@ -2960,7 +2960,7 @@ void CMemory::map_SetaDSP (void)
 
 void CMemory::map_WriteProtectROM (void)
 {
-	memmove((void *) WriteMap, (void *) Map, sizeof(Map));
+	memcpy((void *) WriteMap, (void *) Map, sizeof(Map));
 
 	for (int c = 0; c < 0x1000; c++)
 	{
@@ -3142,8 +3142,8 @@ void CMemory::Map_SuperFXLoROMMap (void)
 	// block is repeated twice in each 64K block.
 	for (int c = 0; c < 64; c++)
 	{
-		memmove(&ROM[0x200000 + c * 0x10000], &ROM[c * 0x8000], 0x8000);
-		memmove(&ROM[0x208000 + c * 0x10000], &ROM[c * 0x8000], 0x8000);
+		memcpy(&ROM[0x200000 + c * 0x10000], &ROM[c * 0x8000], 0x8000);
+		memcpy(&ROM[0x208000 + c * 0x10000], &ROM[c * 0x8000], 0x8000);
 	}
 
 	map_lorom(0x00, 0x3f, 0x8000, 0xffff, CalculatedSize);
@@ -3221,8 +3221,8 @@ void CMemory::Map_SA1LoROMMap (void)
 	map_WriteProtectROM();
 
 	// Now copy the map and correct it for the SA1 CPU.
-	memmove((void *) SA1.Map, (void *) Map, sizeof(Map));
-	memmove((void *) SA1.WriteMap, (void *) WriteMap, sizeof(WriteMap));
+	memcpy((void *) SA1.Map, (void *) Map, sizeof(Map));
+	memcpy((void *) SA1.WriteMap, (void *) WriteMap, sizeof(WriteMap));
 
 	// SA-1 Banks 00->3f and 80->bf
 	for (int c = 0x000; c < 0x400; c += 0x10)
@@ -3266,8 +3266,8 @@ void CMemory::Map_GNEXTSA1LoROMMap (void)
 	map_WriteProtectROM();
 
 	// Now copy the map and correct it for the SA1 CPU.
-	memmove((void *) SA1.Map, (void *) Map, sizeof(Map));
-	memmove((void *) SA1.WriteMap, (void *) WriteMap, sizeof(WriteMap));
+	memcpy((void *) SA1.Map, (void *) Map, sizeof(Map));
+	memcpy((void *) SA1.WriteMap, (void *) WriteMap, sizeof(WriteMap));
 
 	// SA-1 Banks 00->3f and 80->bf
 	for (int c = 0x000; c < 0x400; c += 0x10)
