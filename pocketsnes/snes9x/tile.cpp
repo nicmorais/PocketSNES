@@ -918,14 +918,17 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 
 #define DRAW_TILE() \
 	register uint32	l, x; \
+	register uint16 Color; \
 	\
 	GFX.RealScreenColors = IPPU.ScreenColors; \
 	GFX.ScreenColors = GFX.ClipColors ? BlackColourMap : GFX.RealScreenColors; \
 	\
+	Color = GET_BACKDROP_COLOR(); \
+	\
 	for (l = GFX.StartY; l <= GFX.EndY; l++, Offset += GFX.PPL) \
 	{ \
 		for (x = Left; x < Right; x++) \
-			DRAW_PIXEL(x, 1); \
+			DRAW_BACKDROP_PIXEL(x, Color); \
 	}
 
 #define NAME1	DrawBackdrop16
@@ -1279,6 +1282,16 @@ extern struct SLineMatrixData	LineMatrixData[240];
 		GFX.DB[Offset + N] = Z2; \
 	}
 
+#define GET_BACKDROP_COLOR() \
+	GFX.ScreenColors[Pix]
+
+#define DRAW_BACKDROP_PIXEL(N, C) \
+	if (Z1 > GFX.DB[Offset + N]) \
+	{ \
+		GFX.S[Offset + N] = MATH(C, GFX.SubScreen[Offset + N], GFX.SubZBuffer[Offset + N]); \
+		GFX.DB[Offset + N] = Z2; \
+	}
+
 #define NAME2	Normal1x1
 
 // Third-level include: Get the Normal1x1 renderers.
@@ -1286,6 +1299,8 @@ extern struct SLineMatrixData	LineMatrixData[240];
 #include "tile.cpp"
 
 #undef NAME2
+#undef DRAW_BACKDROP_PIXEL
+#undef GET_BACKDROP_COLOR
 #undef DRAW_PIXEL
 
 // The 2x1 pixel plotter, for normal rendering when we've used hires/interlace already this frame.
@@ -1297,7 +1312,19 @@ extern struct SLineMatrixData	LineMatrixData[240];
 		GFX.DB[Offset + 2 * N] = GFX.DB[Offset + 2 * N + 1] = Z2; \
 	}
 
+#define GET_BACKDROP_COLOR_N2x1() \
+	GFX.ScreenColors[Pix]
+
+#define DRAW_BACKDROP_PIXEL_N2x1(N, C) \
+	if (Z1 > GFX.DB[Offset + 2 * N]) \
+	{ \
+		GFX.S[Offset + 2 * N] = GFX.S[Offset + 2 * N + 1] = MATH(C, GFX.SubScreen[Offset + 2 * N], GFX.SubZBuffer[Offset + 2 * N]); \
+		GFX.DB[Offset + 2 * N] = GFX.DB[Offset + 2 * N + 1] = Z2; \
+	}
+
 #define DRAW_PIXEL(N, M)	DRAW_PIXEL_N2x1(N, M)
+#define GET_BACKDROP_COLOR()	GET_BACKDROP_COLOR_N2x1()
+#define DRAW_BACKDROP_PIXEL(N, C)	DRAW_BACKDROP_PIXEL_N2x1(N, C)
 #define NAME2				Normal2x1
 
 // Third-level include: Get the Normal2x1 renderers.
@@ -1305,6 +1332,8 @@ extern struct SLineMatrixData	LineMatrixData[240];
 #include "tile.cpp"
 
 #undef NAME2
+#undef DRAW_BACKDROP_PIXEL
+#undef GET_BACKDROP_COLOR
 #undef DRAW_PIXEL
 
 // Hires pixel plotter, this combines the main and subscreen pixels as appropriate to render hires or pseudo-hires images.
@@ -1324,7 +1353,21 @@ extern struct SLineMatrixData	LineMatrixData[240];
 		GFX.DB[Offset + 2 * N] = GFX.DB[Offset + 2 * N + 1] = Z2; \
 	}
 
+#define GET_BACKDROP_COLOR_H2x1() \
+	GFX.ScreenColors[Pix]
+
+#define DRAW_BACKDROP_PIXEL_H2x1(N, C) \
+	if (Z1 > GFX.DB[Offset + 2 * N]) \
+	{ \
+		GFX.S[Offset + 2 * N] = MATH((GFX.ClipColors ? 0 : GFX.SubScreen[Offset + 2 * N]), GFX.RealScreenColors[Pix], GFX.SubZBuffer[Offset + 2 * N]); \
+		GFX.S[Offset + 2 * N + 1] = MATH(C, GFX.SubScreen[Offset + 2 * N], GFX.SubZBuffer[Offset + 2 * N]); \
+		GFX.DB[Offset + 2 * N] = GFX.DB[Offset + 2 * N + 1] = Z2; \
+	}
+
 #define DRAW_PIXEL(N, M)	DRAW_PIXEL_H2x1(N, M)
+#define GET_BACKDROP_COLOR()	GET_BACKDROP_COLOR_H2x1()
+#define DRAW_BACKDROP_PIXEL(N, C)	DRAW_BACKDROP_PIXEL_H2x1(N, C)
+
 #define NAME2				Hires
 
 // Third-level include: Get the Hires renderers.
@@ -1332,6 +1375,8 @@ extern struct SLineMatrixData	LineMatrixData[240];
 #include "tile.cpp"
 
 #undef NAME2
+#undef DRAW_BACKDROP_PIXEL
+#undef GET_BACKDROP_COLOR
 #undef DRAW_PIXEL
 
 // Interlace: Only draw every other line, so we'll redefine BPSTART and PITCH to do so.
