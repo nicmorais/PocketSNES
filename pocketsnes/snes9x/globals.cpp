@@ -194,7 +194,6 @@
 
 struct SCPUState		CPU;
 struct SICPU			ICPU;
-struct SRegisters		Registers;
 struct SPPU				PPU;
 struct InternalPPU		IPPU;
 struct SDMA				DMA[8];
@@ -209,7 +208,6 @@ struct SDSP2			DSP2;
 struct SDSP3			DSP3;
 struct SDSP4			DSP4;
 struct SSA1				SA1;
-struct SRegisters		SA1Registers;
 struct FxRegs_s			GSU;
 struct FxInfo_s			SuperFX;
 struct SST010			ST010;

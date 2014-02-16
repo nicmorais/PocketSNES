@@ -289,27 +289,27 @@ rOPM (73Slow,   StackRelativeIndirectIndexedSlow, WRAP_NONE, ADC)
 
 static void Op29M1 (void)
 {
-	Registers.AL &= Immediate8(READ);
-	SetZN(Registers.AL);
+	CPU.Registers.AL &= Immediate8(READ);
+	SetZN(CPU.Registers.AL);
 }
 
 static void Op29M0 (void)
 {
-	Registers.A.W &= Immediate16(READ);
-	SetZN(Registers.A.W);
+	CPU.Registers.A.W &= Immediate16(READ);
+	SetZN(CPU.Registers.A.W);
 }
 
 static void Op29Slow (void)
 {
 	if (CheckMemory())
 	{
-		Registers.AL &= Immediate8Slow(READ);
-		SetZN(Registers.AL);
+		CPU.Registers.AL &= Immediate8Slow(READ);
+		SetZN(CPU.Registers.AL);
 	}
 	else
 	{
-		Registers.A.W &= Immediate16Slow(READ);
-		SetZN(Registers.A.W);
+		CPU.Registers.A.W &= Immediate16Slow(READ);
+		SetZN(CPU.Registers.A.W);
 	}
 }
 
@@ -384,17 +384,17 @@ rOPM (33Slow,   StackRelativeIndirectIndexedSlow, WRAP_NONE, AND)
 static void Op0AM1 (void)
 {
 	AddCycles(ONE_CYCLE);
-	ICPU._Carry = (Registers.AL & 0x80) != 0;
-	Registers.AL <<= 1;
-	SetZN(Registers.AL);
+	ICPU._Carry = (CPU.Registers.AL & 0x80) != 0;
+	CPU.Registers.AL <<= 1;
+	SetZN(CPU.Registers.AL);
 }
 
 static void Op0AM0 (void)
 {
 	AddCycles(ONE_CYCLE);
-	ICPU._Carry = (Registers.AH & 0x80) != 0;
-	Registers.A.W <<= 1;
-	SetZN(Registers.A.W);
+	ICPU._Carry = (CPU.Registers.AH & 0x80) != 0;
+	CPU.Registers.A.W <<= 1;
+	SetZN(CPU.Registers.A.W);
 }
 
 static void Op0ASlow (void)
@@ -403,15 +403,15 @@ static void Op0ASlow (void)
 
 	if (CheckMemory())
 	{
-		ICPU._Carry = (Registers.AL & 0x80) != 0;
-		Registers.AL <<= 1;
-		SetZN(Registers.AL);
+		ICPU._Carry = (CPU.Registers.AL & 0x80) != 0;
+		CPU.Registers.AL <<= 1;
+		SetZN(CPU.Registers.AL);
 	}
 	else
 	{
-		ICPU._Carry = (Registers.AH & 0x80) != 0;
-		Registers.A.W <<= 1;
-		SetZN(Registers.A.W);
+		ICPU._Carry = (CPU.Registers.AH & 0x80) != 0;
+		CPU.Registers.A.W <<= 1;
+		SetZN(CPU.Registers.A.W);
 	}
 }
 
@@ -438,20 +438,20 @@ mOPM (1ESlow,   AbsoluteIndexedXSlow,             WRAP_NONE, ASL)
 
 static void Op89M1 (void)
 {
-	ICPU._Zero = Registers.AL & Immediate8(READ);
+	ICPU._Zero = CPU.Registers.AL & Immediate8(READ);
 }
 
 static void Op89M0 (void)
 {
-	ICPU._Zero = (Registers.A.W & Immediate16(READ)) != 0;
+	ICPU._Zero = (CPU.Registers.A.W & Immediate16(READ)) != 0;
 }
 
 static void Op89Slow (void)
 {
 	if (CheckMemory())
-		ICPU._Zero = Registers.AL & Immediate8Slow(READ);
+		ICPU._Zero = CPU.Registers.AL & Immediate8Slow(READ);
 	else
-		ICPU._Zero = (Registers.A.W & Immediate16Slow(READ)) != 0;
+		ICPU._Zero = (CPU.Registers.A.W & Immediate16Slow(READ)) != 0;
 }
 
 rOP8 (24M1,     Direct,                           WRAP_BANK, BIT)
@@ -477,14 +477,14 @@ rOPM (3CSlow,   AbsoluteIndexedXSlow,             WRAP_NONE, BIT)
 
 static void OpC9M1 (void)
 {
-	int16	Int16 = (int16) Registers.AL - (int16) Immediate8(READ);
+	int16	Int16 = (int16) CPU.Registers.AL - (int16) Immediate8(READ);
 	ICPU._Carry = Int16 >= 0;
 	SetZN((uint8) Int16);
 }
 
 static void OpC9M0 (void)
 {
-	int32	Int32 = (int32) Registers.A.W - (int32) Immediate16(READ);
+	int32	Int32 = (int32) CPU.Registers.A.W - (int32) Immediate16(READ);
 	ICPU._Carry = Int32 >= 0;
 	SetZN((uint16) Int32);
 }
@@ -493,13 +493,13 @@ static void OpC9Slow (void)
 {
 	if (CheckMemory())
 	{
-		int16	Int16 = (int16) Registers.AL - (int16) Immediate8Slow(READ);
+		int16	Int16 = (int16) CPU.Registers.AL - (int16) Immediate8Slow(READ);
 		ICPU._Carry = Int16 >= 0;
 		SetZN((uint8) Int16);
 	}
 	else
 	{
-		int32	Int32 = (int32) Registers.A.W - (int32) Immediate16Slow(READ);
+		int32	Int32 = (int32) CPU.Registers.A.W - (int32) Immediate16Slow(READ);
 		ICPU._Carry = Int32 >= 0;
 		SetZN((uint16) Int32);
 	}
@@ -575,14 +575,14 @@ rOPM (D3Slow,   StackRelativeIndirectIndexedSlow, WRAP_NONE, CMP)
 
 static void OpE0X1 (void)
 {
-	int16	Int16 = (int16) Registers.XL - (int16) Immediate8(READ);
+	int16	Int16 = (int16) CPU.Registers.XL - (int16) Immediate8(READ);
 	ICPU._Carry = Int16 >= 0;
 	SetZN((uint8) Int16);
 }
 
 static void OpE0X0 (void)
 {
-	int32	Int32 = (int32) Registers.X.W - (int32) Immediate16(READ);
+	int32	Int32 = (int32) CPU.Registers.X.W - (int32) Immediate16(READ);
 	ICPU._Carry = Int32 >= 0;
 	SetZN((uint16) Int32);
 }
@@ -591,13 +591,13 @@ static void OpE0Slow (void)
 {
 	if (CheckIndex())
 	{
-		int16	Int16 = (int16) Registers.XL - (int16) Immediate8Slow(READ);
+		int16	Int16 = (int16) CPU.Registers.XL - (int16) Immediate8Slow(READ);
 		ICPU._Carry = Int16 >= 0;
 		SetZN((uint8) Int16);
 	}
 	else
 	{
-		int32	Int32 = (int32) Registers.X.W - (int32) Immediate16Slow(READ);
+		int32	Int32 = (int32) CPU.Registers.X.W - (int32) Immediate16Slow(READ);
 		ICPU._Carry = Int32 >= 0;
 		SetZN((uint16) Int32);
 	}
@@ -615,14 +615,14 @@ rOPX (ECSlow,   AbsoluteSlow,                     WRAP_NONE, CPX)
 
 static void OpC0X1 (void)
 {
-	int16	Int16 = (int16) Registers.YL - (int16) Immediate8(READ);
+	int16	Int16 = (int16) CPU.Registers.YL - (int16) Immediate8(READ);
 	ICPU._Carry = Int16 >= 0;
 	SetZN((uint8) Int16);
 }
 
 static void OpC0X0 (void)
 {
-	int32	Int32 = (int32) Registers.Y.W - (int32) Immediate16(READ);
+	int32	Int32 = (int32) CPU.Registers.Y.W - (int32) Immediate16(READ);
 	ICPU._Carry = Int32 >= 0;
 	SetZN((uint16) Int32);
 }
@@ -631,13 +631,13 @@ static void OpC0Slow (void)
 {
 	if (CheckIndex())
 	{
-		int16	Int16 = (int16) Registers.YL - (int16) Immediate8Slow(READ);
+		int16	Int16 = (int16) CPU.Registers.YL - (int16) Immediate8Slow(READ);
 		ICPU._Carry = Int16 >= 0;
 		SetZN((uint8) Int16);
 	}
 	else
 	{
-		int32	Int32 = (int32) Registers.Y.W - (int32) Immediate16Slow(READ);
+		int32	Int32 = (int32) CPU.Registers.Y.W - (int32) Immediate16Slow(READ);
 		ICPU._Carry = Int32 >= 0;
 		SetZN((uint16) Int32);
 	}
@@ -656,15 +656,15 @@ rOPX (CCSlow,   AbsoluteSlow,                     WRAP_NONE, CPY)
 static void Op3AM1 (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.AL--;
-	SetZN(Registers.AL);
+	CPU.Registers.AL--;
+	SetZN(CPU.Registers.AL);
 }
 
 static void Op3AM0 (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.A.W--;
-	SetZN(Registers.A.W);
+	CPU.Registers.A.W--;
+	SetZN(CPU.Registers.A.W);
 }
 
 static void Op3ASlow (void)
@@ -673,13 +673,13 @@ static void Op3ASlow (void)
 
 	if (CheckMemory())
 	{
-		Registers.AL--;
-		SetZN(Registers.AL);
+		CPU.Registers.AL--;
+		SetZN(CPU.Registers.AL);
 	}
 	else
 	{
-		Registers.A.W--;
-		SetZN(Registers.A.W);
+		CPU.Registers.A.W--;
+		SetZN(CPU.Registers.A.W);
 	}
 }
 
@@ -706,27 +706,27 @@ mOPM (DESlow,   AbsoluteIndexedXSlow,             WRAP_NONE, DEC)
 
 static void Op49M1 (void)
 {
-	Registers.AL ^= Immediate8(READ);
-	SetZN(Registers.AL);
+	CPU.Registers.AL ^= Immediate8(READ);
+	SetZN(CPU.Registers.AL);
 }
 
 static void Op49M0 (void)
 {
-	Registers.A.W ^= Immediate16(READ);
-	SetZN(Registers.A.W);
+	CPU.Registers.A.W ^= Immediate16(READ);
+	SetZN(CPU.Registers.A.W);
 }
 
 static void Op49Slow (void)
 {
 	if (CheckMemory())
 	{
-		Registers.AL ^= Immediate8Slow(READ);
-		SetZN(Registers.AL);
+		CPU.Registers.AL ^= Immediate8Slow(READ);
+		SetZN(CPU.Registers.AL);
 	}
 	else
 	{
-		Registers.A.W ^= Immediate16Slow(READ);
-		SetZN(Registers.A.W);
+		CPU.Registers.A.W ^= Immediate16Slow(READ);
+		SetZN(CPU.Registers.A.W);
 	}
 }
 
@@ -801,15 +801,15 @@ rOPM (53Slow,   StackRelativeIndirectIndexedSlow, WRAP_NONE, EOR)
 static void Op1AM1 (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.AL++;
-	SetZN(Registers.AL);
+	CPU.Registers.AL++;
+	SetZN(CPU.Registers.AL);
 }
 
 static void Op1AM0 (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.A.W++;
-	SetZN(Registers.A.W);
+	CPU.Registers.A.W++;
+	SetZN(CPU.Registers.A.W);
 }
 
 static void Op1ASlow (void)
@@ -818,13 +818,13 @@ static void Op1ASlow (void)
 
 	if (CheckMemory())
 	{
-		Registers.AL++;
-		SetZN(Registers.AL);
+		CPU.Registers.AL++;
+		SetZN(CPU.Registers.AL);
 	}
 	else
 	{
-		Registers.A.W++;
-		SetZN(Registers.A.W);
+		CPU.Registers.A.W++;
+		SetZN(CPU.Registers.A.W);
 	}
 }
 
@@ -851,27 +851,27 @@ mOPM (FESlow,   AbsoluteIndexedXSlow,             WRAP_NONE, INC)
 
 static void OpA9M1 (void)
 {
-	Registers.AL = Immediate8(READ);
-	SetZN(Registers.AL);
+	CPU.Registers.AL = Immediate8(READ);
+	SetZN(CPU.Registers.AL);
 }
 
 static void OpA9M0 (void)
 {
-	Registers.A.W = Immediate16(READ);
-	SetZN(Registers.A.W);
+	CPU.Registers.A.W = Immediate16(READ);
+	SetZN(CPU.Registers.A.W);
 }
 
 static void OpA9Slow (void)
 {
 	if (CheckMemory())
 	{
-		Registers.AL = Immediate8Slow(READ);
-		SetZN(Registers.AL);
+		CPU.Registers.AL = Immediate8Slow(READ);
+		SetZN(CPU.Registers.AL);
 	}
 	else
 	{
-		Registers.A.W = Immediate16Slow(READ);
-		SetZN(Registers.A.W);
+		CPU.Registers.A.W = Immediate16Slow(READ);
+		SetZN(CPU.Registers.A.W);
 	}
 }
 
@@ -945,27 +945,27 @@ rOPM (B3Slow,   StackRelativeIndirectIndexedSlow, WRAP_NONE, LDA)
 
 static void OpA2X1 (void)
 {
-	Registers.XL = Immediate8(READ);
-	SetZN(Registers.XL);
+	CPU.Registers.XL = Immediate8(READ);
+	SetZN(CPU.Registers.XL);
 }
 
 static void OpA2X0 (void)
 {
-	Registers.X.W = Immediate16(READ);
-	SetZN(Registers.X.W);
+	CPU.Registers.X.W = Immediate16(READ);
+	SetZN(CPU.Registers.X.W);
 }
 
 static void OpA2Slow (void)
 {
 	if (CheckIndex())
 	{
-		Registers.XL = Immediate8Slow(READ);
-		SetZN(Registers.XL);
+		CPU.Registers.XL = Immediate8Slow(READ);
+		SetZN(CPU.Registers.XL);
 	}
 	else
 	{
-		Registers.X.W = Immediate16Slow(READ);
-		SetZN(Registers.X.W);
+		CPU.Registers.X.W = Immediate16Slow(READ);
+		SetZN(CPU.Registers.X.W);
 	}
 }
 
@@ -990,27 +990,27 @@ rOPX (BESlow,   AbsoluteIndexedYSlow,             WRAP_BANK, LDX)
 
 static void OpA0X1 (void)
 {
-	Registers.YL = Immediate8(READ);
-	SetZN(Registers.YL);
+	CPU.Registers.YL = Immediate8(READ);
+	SetZN(CPU.Registers.YL);
 }
 
 static void OpA0X0 (void)
 {
-	Registers.Y.W = Immediate16(READ);
-	SetZN(Registers.Y.W);
+	CPU.Registers.Y.W = Immediate16(READ);
+	SetZN(CPU.Registers.Y.W);
 }
 
 static void OpA0Slow (void)
 {
 	if (CheckIndex())
 	{
-		Registers.YL = Immediate8Slow(READ);
-		SetZN(Registers.YL);
+		CPU.Registers.YL = Immediate8Slow(READ);
+		SetZN(CPU.Registers.YL);
 	}
 	else
 	{
-		Registers.Y.W = Immediate16Slow(READ);
-		SetZN(Registers.Y.W);
+		CPU.Registers.Y.W = Immediate16Slow(READ);
+		SetZN(CPU.Registers.Y.W);
 	}
 }
 
@@ -1036,17 +1036,17 @@ rOPX (BCSlow,   AbsoluteIndexedXSlow,             WRAP_BANK, LDY)
 static void Op4AM1 (void)
 {
 	AddCycles(ONE_CYCLE);
-	ICPU._Carry = Registers.AL & 1;
-	Registers.AL >>= 1;
-	SetZN(Registers.AL);
+	ICPU._Carry = CPU.Registers.AL & 1;
+	CPU.Registers.AL >>= 1;
+	SetZN(CPU.Registers.AL);
 }
 
 static void Op4AM0 (void)
 {
 	AddCycles(ONE_CYCLE);
-	ICPU._Carry = Registers.A.W & 1;
-	Registers.A.W >>= 1;
-	SetZN(Registers.A.W);
+	ICPU._Carry = CPU.Registers.A.W & 1;
+	CPU.Registers.A.W >>= 1;
+	SetZN(CPU.Registers.A.W);
 }
 
 static void Op4ASlow (void)
@@ -1055,15 +1055,15 @@ static void Op4ASlow (void)
 
 	if (CheckMemory())
 	{
-		ICPU._Carry = Registers.AL & 1;
-		Registers.AL >>= 1;
-		SetZN(Registers.AL);
+		ICPU._Carry = CPU.Registers.AL & 1;
+		CPU.Registers.AL >>= 1;
+		SetZN(CPU.Registers.AL);
 	}
 	else
 	{
-		ICPU._Carry = Registers.A.W & 1;
-		Registers.A.W >>= 1;
-		SetZN(Registers.A.W);
+		ICPU._Carry = CPU.Registers.A.W & 1;
+		CPU.Registers.A.W >>= 1;
+		SetZN(CPU.Registers.A.W);
 	}
 }
 
@@ -1090,27 +1090,27 @@ mOPM (5ESlow,   AbsoluteIndexedXSlow,             WRAP_NONE, LSR)
 
 static void Op09M1 (void)
 {
-	Registers.AL |= Immediate8(READ);
-	SetZN(Registers.AL);
+	CPU.Registers.AL |= Immediate8(READ);
+	SetZN(CPU.Registers.AL);
 }
 
 static void Op09M0 (void)
 {
-	Registers.A.W |= Immediate16(READ);
-	SetZN(Registers.A.W);
+	CPU.Registers.A.W |= Immediate16(READ);
+	SetZN(CPU.Registers.A.W);
 }
 
 static void Op09Slow (void)
 {
 	if (CheckMemory())
 	{
-		Registers.AL |= Immediate8Slow(READ);
-		SetZN(Registers.AL);
+		CPU.Registers.AL |= Immediate8Slow(READ);
+		SetZN(CPU.Registers.AL);
 	}
 	else
 	{
-		Registers.A.W |= Immediate16Slow(READ);
-		SetZN(Registers.A.W);
+		CPU.Registers.A.W |= Immediate16Slow(READ);
+		SetZN(CPU.Registers.A.W);
 	}
 }
 
@@ -1185,19 +1185,19 @@ rOPM (13Slow,   StackRelativeIndirectIndexedSlow, WRAP_NONE, ORA)
 static void Op2AM1 (void)
 {
 	AddCycles(ONE_CYCLE);
-	uint16	w = (((uint16) Registers.AL) << 1) | CheckCarry();
+	uint16	w = (((uint16) CPU.Registers.AL) << 1) | CheckCarry();
 	ICPU._Carry = w >= 0x100;
-	Registers.AL = (uint8) w;
-	SetZN(Registers.AL);
+	CPU.Registers.AL = (uint8) w;
+	SetZN(CPU.Registers.AL);
 }
 
 static void Op2AM0 (void)
 {
 	AddCycles(ONE_CYCLE);
-	uint32	w = (((uint32) Registers.A.W) << 1) | CheckCarry();
+	uint32	w = (((uint32) CPU.Registers.A.W) << 1) | CheckCarry();
 	ICPU._Carry = w >= 0x10000;
-	Registers.A.W = (uint16) w;
-	SetZN(Registers.A.W);
+	CPU.Registers.A.W = (uint16) w;
+	SetZN(CPU.Registers.A.W);
 }
 
 static void Op2ASlow (void)
@@ -1206,17 +1206,17 @@ static void Op2ASlow (void)
 
 	if (CheckMemory())
 	{
-		uint16	w = (((uint16) Registers.AL) << 1) | CheckCarry();
+		uint16	w = (((uint16) CPU.Registers.AL) << 1) | CheckCarry();
 		ICPU._Carry = w >= 0x100;
-		Registers.AL = (uint8) w;
-		SetZN(Registers.AL);
+		CPU.Registers.AL = (uint8) w;
+		SetZN(CPU.Registers.AL);
 	}
 	else
 	{
-		uint32	w = (((uint32) Registers.A.W) << 1) | CheckCarry();
+		uint32	w = (((uint32) CPU.Registers.A.W) << 1) | CheckCarry();
 		ICPU._Carry = w >= 0x10000;
-		Registers.A.W = (uint16) w;
-		SetZN(Registers.A.W);
+		CPU.Registers.A.W = (uint16) w;
+		SetZN(CPU.Registers.A.W);
 	}
 }
 
@@ -1244,21 +1244,21 @@ mOPM (3ESlow,   AbsoluteIndexedXSlow,             WRAP_NONE, ROL)
 static void Op6AM1 (void)
 {
 	AddCycles(ONE_CYCLE);
-	uint16	w = ((uint16) Registers.AL) | (((uint16) CheckCarry()) << 8);
+	uint16	w = ((uint16) CPU.Registers.AL) | (((uint16) CheckCarry()) << 8);
 	ICPU._Carry = w & 1;
 	w >>= 1;
-	Registers.AL = (uint8) w;
-	SetZN(Registers.AL);
+	CPU.Registers.AL = (uint8) w;
+	SetZN(CPU.Registers.AL);
 }
 
 static void Op6AM0 (void)
 {
 	AddCycles(ONE_CYCLE);
-	uint32	w = ((uint32) Registers.A.W) | (((uint32) CheckCarry()) << 16);
+	uint32	w = ((uint32) CPU.Registers.A.W) | (((uint32) CheckCarry()) << 16);
 	ICPU._Carry = w & 1;
 	w >>= 1;
-	Registers.A.W = (uint16) w;
-	SetZN(Registers.A.W);
+	CPU.Registers.A.W = (uint16) w;
+	SetZN(CPU.Registers.A.W);
 }
 
 static void Op6ASlow (void)
@@ -1267,19 +1267,19 @@ static void Op6ASlow (void)
 
 	if (CheckMemory())
 	{
-		uint16	w = ((uint16) Registers.AL) | (((uint16) CheckCarry()) << 8);
+		uint16	w = ((uint16) CPU.Registers.AL) | (((uint16) CheckCarry()) << 8);
 		ICPU._Carry = w & 1;
 		w >>= 1;
-		Registers.AL = (uint8) w;
-		SetZN(Registers.AL);
+		CPU.Registers.AL = (uint8) w;
+		SetZN(CPU.Registers.AL);
 	}
 	else
 	{
-		uint32	w = ((uint32) Registers.A.W) | (((uint32) CheckCarry()) << 16);
+		uint32	w = ((uint32) CPU.Registers.A.W) | (((uint32) CheckCarry()) << 16);
 		ICPU._Carry = w & 1;
 		w >>= 1;
-		Registers.A.W = (uint16) w;
-		SetZN(Registers.A.W);
+		CPU.Registers.A.W = (uint16) w;
+		SetZN(CPU.Registers.A.W);
 	}
 }
 
@@ -1645,15 +1645,15 @@ static void OpB8 (void)
 static void OpCAX1 (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.XL--;
-	SetZN(Registers.XL);
+	CPU.Registers.XL--;
+	SetZN(CPU.Registers.XL);
 }
 
 static void OpCAX0 (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.X.W--;
-	SetZN(Registers.X.W);
+	CPU.Registers.X.W--;
+	SetZN(CPU.Registers.X.W);
 }
 
 static void OpCASlow (void)
@@ -1662,28 +1662,28 @@ static void OpCASlow (void)
 
 	if (CheckIndex())
 	{
-		Registers.XL--;
-		SetZN(Registers.XL);
+		CPU.Registers.XL--;
+		SetZN(CPU.Registers.XL);
 	}
 	else
 	{
-		Registers.X.W--;
-		SetZN(Registers.X.W);
+		CPU.Registers.X.W--;
+		SetZN(CPU.Registers.X.W);
 	}
 }
 
 static void Op88X1 (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.YL--;
-	SetZN(Registers.YL);
+	CPU.Registers.YL--;
+	SetZN(CPU.Registers.YL);
 }
 
 static void Op88X0 (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.Y.W--;
-	SetZN(Registers.Y.W);
+	CPU.Registers.Y.W--;
+	SetZN(CPU.Registers.Y.W);
 }
 
 static void Op88Slow (void)
@@ -1692,13 +1692,13 @@ static void Op88Slow (void)
 
 	if (CheckIndex())
 	{
-		Registers.YL--;
-		SetZN(Registers.YL);
+		CPU.Registers.YL--;
+		SetZN(CPU.Registers.YL);
 	}
 	else
 	{
-		Registers.Y.W--;
-		SetZN(Registers.Y.W);
+		CPU.Registers.Y.W--;
+		SetZN(CPU.Registers.Y.W);
 	}
 }
 
@@ -1707,15 +1707,15 @@ static void Op88Slow (void)
 static void OpE8X1 (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.XL++;
-	SetZN(Registers.XL);
+	CPU.Registers.XL++;
+	SetZN(CPU.Registers.XL);
 }
 
 static void OpE8X0 (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.X.W++;
-	SetZN(Registers.X.W);
+	CPU.Registers.X.W++;
+	SetZN(CPU.Registers.X.W);
 }
 
 static void OpE8Slow (void)
@@ -1724,28 +1724,28 @@ static void OpE8Slow (void)
 
 	if (CheckIndex())
 	{
-		Registers.XL++;
-		SetZN(Registers.XL);
+		CPU.Registers.XL++;
+		SetZN(CPU.Registers.XL);
 	}
 	else
 	{
-		Registers.X.W++;
-		SetZN(Registers.X.W);
+		CPU.Registers.X.W++;
+		SetZN(CPU.Registers.X.W);
 	}
 }
 
 static void OpC8X1 (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.YL++;
-	SetZN(Registers.YL);
+	CPU.Registers.YL++;
+	SetZN(CPU.Registers.YL);
 }
 
 static void OpC8X0 (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.Y.W++;
-	SetZN(Registers.Y.W);
+	CPU.Registers.Y.W++;
+	SetZN(CPU.Registers.Y.W);
 }
 
 static void OpC8Slow (void)
@@ -1754,13 +1754,13 @@ static void OpC8Slow (void)
 
 	if (CheckIndex())
 	{
-		Registers.YL--;
-		SetZN(Registers.YL);
+		CPU.Registers.YL--;
+		SetZN(CPU.Registers.YL);
 	}
 	else
 	{
-		Registers.Y.W--;
-		SetZN(Registers.Y.W);
+		CPU.Registers.Y.W--;
+		SetZN(CPU.Registers.Y.W);
 	}
 }
 
@@ -1774,20 +1774,20 @@ static void OpEA (void)
 /* PUSH Instructions ******************************************************* */
 
 #define PushW(w) \
-	S9xSetWord(w, Registers.S.W - 1, WRAP_BANK, WRITE_10); \
-	Registers.S.W -= 2;
+	S9xSetWord(w, CPU.Registers.S.W - 1, WRAP_BANK, WRITE_10); \
+	CPU.Registers.S.W -= 2;
 
 #define PushWE(w) \
-	Registers.SL--; \
-	S9xSetWord(w, Registers.S.W, WRAP_PAGE, WRITE_10); \
-	Registers.SL--;
+	CPU.Registers.SL--; \
+	S9xSetWord(w, CPU.Registers.S.W, WRAP_PAGE, WRITE_10); \
+	CPU.Registers.SL--;
 
 #define PushB(b) \
-	S9xSetByte(b, Registers.S.W--);
+	S9xSetByte(b, CPU.Registers.S.W--);
 
 #define PushBE(b) \
-	S9xSetByte(b, Registers.S.W); \
-	Registers.SL--;
+	S9xSetByte(b, CPU.Registers.S.W); \
+	CPU.Registers.SL--;
 
 // PEA
 static void OpF4E0 (void)
@@ -1804,7 +1804,7 @@ static void OpF4E1 (void)
 	uint16	val = (uint16) Absolute(NONE);
 	PushW(val);
 	OpenBus = val & 0xff;
-	Registers.SH = 1;
+	CPU.Registers.SH = 1;
 }
 
 static void OpF4Slow (void)
@@ -1813,7 +1813,7 @@ static void OpF4Slow (void)
 	PushW(val);
 	OpenBus = val & 0xff;
 	if (CheckEmulation())
-		Registers.SH = 1;
+		CPU.Registers.SH = 1;
 }
 
 // PEI
@@ -1831,7 +1831,7 @@ static void OpD4E1 (void)
 	uint16	val = (uint16) DirectIndirectE1(NONE);
 	PushW(val);
 	OpenBus = val & 0xff;
-	Registers.SH = 1;
+	CPU.Registers.SH = 1;
 }
 
 static void OpD4Slow (void)
@@ -1840,7 +1840,7 @@ static void OpD4Slow (void)
 	PushW(val);
 	OpenBus = val & 0xff;
 	if (CheckEmulation())
-		Registers.SH = 1;
+		CPU.Registers.SH = 1;
 }
 
 // PER
@@ -1858,7 +1858,7 @@ static void Op62E1 (void)
 	uint16	val = (uint16) RelativeLong(NONE);
 	PushW(val);
 	OpenBus = val & 0xff;
-	Registers.SH = 1;
+	CPU.Registers.SH = 1;
 }
 
 static void Op62Slow (void)
@@ -1867,29 +1867,29 @@ static void Op62Slow (void)
 	PushW(val);
 	OpenBus = val & 0xff;
 	if (CheckEmulation())
-		Registers.SH = 1;
+		CPU.Registers.SH = 1;
 }
 
 // PHA
 static void Op48E1 (void)
 {
 	AddCycles(ONE_CYCLE);
-	PushBE(Registers.AL);
-	OpenBus = Registers.AL;
+	PushBE(CPU.Registers.AL);
+	OpenBus = CPU.Registers.AL;
 }
 
 static void Op48E0M1 (void)
 {
 	AddCycles(ONE_CYCLE);
-	PushB(Registers.AL);
-	OpenBus = Registers.AL;
+	PushB(CPU.Registers.AL);
+	OpenBus = CPU.Registers.AL;
 }
 
 static void Op48E0M0 (void)
 {
 	AddCycles(ONE_CYCLE);
-	PushW(Registers.A.W);
-	OpenBus = Registers.AL;
+	PushW(CPU.Registers.A.W);
+	OpenBus = CPU.Registers.AL;
 }
 
 static void Op48Slow (void)
@@ -1898,34 +1898,34 @@ static void Op48Slow (void)
 
 	if (CheckEmulation())
 	{
-		PushBE(Registers.AL);
+		PushBE(CPU.Registers.AL);
 	}
 	else
 	if (CheckMemory())
 	{
-		PushB(Registers.AL);
+		PushB(CPU.Registers.AL);
 	}
 	else
 	{
-		PushW(Registers.A.W);
+		PushW(CPU.Registers.A.W);
 	}
 
-	OpenBus = Registers.AL;
+	OpenBus = CPU.Registers.AL;
 }
 
 // PHB
 static void Op8BE1 (void)
 {
 	AddCycles(ONE_CYCLE);
-	PushBE(Registers.DB);
-	OpenBus = Registers.DB;
+	PushBE(CPU.Registers.DB);
+	OpenBus = CPU.Registers.DB;
 }
 
 static void Op8BE0 (void)
 {
 	AddCycles(ONE_CYCLE);
-	PushB(Registers.DB);
-	OpenBus = Registers.DB;
+	PushB(CPU.Registers.DB);
+	OpenBus = CPU.Registers.DB;
 }
 
 static void Op8BSlow (void)
@@ -1934,22 +1934,22 @@ static void Op8BSlow (void)
 
 	if (CheckEmulation())
 	{
-		PushBE(Registers.DB);
+		PushBE(CPU.Registers.DB);
 	}
 	else
 	{
-		PushB(Registers.DB);
+		PushB(CPU.Registers.DB);
 	}
 
-	OpenBus = Registers.DB;
+	OpenBus = CPU.Registers.DB;
 }
 
 // PHD
 static void Op0BE0 (void)
 {
 	AddCycles(ONE_CYCLE);
-	PushW(Registers.D.W);
-	OpenBus = Registers.DL;
+	PushW(CPU.Registers.D.W);
+	OpenBus = CPU.Registers.DL;
 }
 
 static void Op0BE1 (void)
@@ -1957,33 +1957,33 @@ static void Op0BE1 (void)
 	// Note: PHD is a new instruction,
 	// and so doesn't respect the emu-mode stack bounds.
 	AddCycles(ONE_CYCLE);
-	PushW(Registers.D.W);
-	OpenBus = Registers.DL;
-	Registers.SH = 1;
+	PushW(CPU.Registers.D.W);
+	OpenBus = CPU.Registers.DL;
+	CPU.Registers.SH = 1;
 }
 
 static void Op0BSlow (void)
 {
 	AddCycles(ONE_CYCLE);
-	PushW(Registers.D.W);
-	OpenBus = Registers.DL;
+	PushW(CPU.Registers.D.W);
+	OpenBus = CPU.Registers.DL;
 	if (CheckEmulation())
-		Registers.SH = 1;
+		CPU.Registers.SH = 1;
 }
 
 // PHK
 static void Op4BE1 (void)
 {
 	AddCycles(ONE_CYCLE);
-	PushBE(Registers.PB);
-	OpenBus = Registers.PB;
+	PushBE(CPU.Registers.PB);
+	OpenBus = CPU.Registers.PB;
 }
 
 static void Op4BE0 (void)
 {
 	AddCycles(ONE_CYCLE);
-	PushB(Registers.PB);
-	OpenBus = Registers.PB;
+	PushB(CPU.Registers.PB);
+	OpenBus = CPU.Registers.PB;
 }
 
 static void Op4BSlow (void)
@@ -1992,14 +1992,14 @@ static void Op4BSlow (void)
 
 	if (CheckEmulation())
 	{
-		PushBE(Registers.PB);
+		PushBE(CPU.Registers.PB);
 	}
 	else
 	{
-		PushB(Registers.PB);
+		PushB(CPU.Registers.PB);
 	}
 
-	OpenBus = Registers.PB;
+	OpenBus = CPU.Registers.PB;
 }
 
 // PHP
@@ -2007,16 +2007,16 @@ static void Op08E0 (void)
 {
 	S9xPackStatus();
 	AddCycles(ONE_CYCLE);
-	PushB(Registers.PL);
-	OpenBus = Registers.PL;
+	PushB(CPU.Registers.PL);
+	OpenBus = CPU.Registers.PL;
 }
 
 static void Op08E1 (void)
 {
 	S9xPackStatus();
 	AddCycles(ONE_CYCLE);
-	PushBE(Registers.PL);
-	OpenBus = Registers.PL;
+	PushBE(CPU.Registers.PL);
+	OpenBus = CPU.Registers.PL;
 }
 
 static void Op08Slow (void)
@@ -2026,36 +2026,36 @@ static void Op08Slow (void)
 
 	if (CheckEmulation())
 	{
-		PushBE(Registers.PL);
+		PushBE(CPU.Registers.PL);
 	}
 	else
 	{
-		PushB(Registers.PL);
+		PushB(CPU.Registers.PL);
 	}
 
-	OpenBus = Registers.PL;
+	OpenBus = CPU.Registers.PL;
 }
 
 // PHX
 static void OpDAE1 (void)
 {
 	AddCycles(ONE_CYCLE);
-	PushBE(Registers.XL);
-	OpenBus = Registers.XL;
+	PushBE(CPU.Registers.XL);
+	OpenBus = CPU.Registers.XL;
 }
 
 static void OpDAE0X1 (void)
 {
 	AddCycles(ONE_CYCLE);
-	PushB(Registers.XL);
-	OpenBus = Registers.XL;
+	PushB(CPU.Registers.XL);
+	OpenBus = CPU.Registers.XL;
 }
 
 static void OpDAE0X0 (void)
 {
 	AddCycles(ONE_CYCLE);
-	PushW(Registers.X.W);
-	OpenBus = Registers.XL;
+	PushW(CPU.Registers.X.W);
+	OpenBus = CPU.Registers.XL;
 }
 
 static void OpDASlow (void)
@@ -2064,41 +2064,41 @@ static void OpDASlow (void)
 
 	if (CheckEmulation())
 	{
-		PushBE(Registers.XL);
+		PushBE(CPU.Registers.XL);
 	}
 	else
 	if (CheckIndex())
 	{
-		PushB(Registers.XL);
+		PushB(CPU.Registers.XL);
 	}
 	else
 	{
-		PushW(Registers.X.W);
+		PushW(CPU.Registers.X.W);
 	}
 
-	OpenBus = Registers.XL;
+	OpenBus = CPU.Registers.XL;
 }
 
 // PHY
 static void Op5AE1 (void)
 {
 	AddCycles(ONE_CYCLE);
-	PushBE(Registers.YL);
-	OpenBus = Registers.YL;
+	PushBE(CPU.Registers.YL);
+	OpenBus = CPU.Registers.YL;
 }
 
 static void Op5AE0X1 (void)
 {
 	AddCycles(ONE_CYCLE);
-	PushB(Registers.YL);
-	OpenBus = Registers.YL;
+	PushB(CPU.Registers.YL);
+	OpenBus = CPU.Registers.YL;
 }
 
 static void Op5AE0X0 (void)
 {
 	AddCycles(ONE_CYCLE);
-	PushW(Registers.Y.W);
-	OpenBus = Registers.YL;
+	PushW(CPU.Registers.Y.W);
+	OpenBus = CPU.Registers.YL;
 }
 
 static void Op5ASlow (void)
@@ -2107,62 +2107,62 @@ static void Op5ASlow (void)
 
 	if (CheckEmulation())
 	{
-		PushBE(Registers.YL);
+		PushBE(CPU.Registers.YL);
 	}
 	else
 	if (CheckIndex())
 	{
-		PushB(Registers.YL);
+		PushB(CPU.Registers.YL);
 	}
 	else
 	{
-		PushW(Registers.Y.W);
+		PushW(CPU.Registers.Y.W);
 	}
 
-	OpenBus = Registers.YL;
+	OpenBus = CPU.Registers.YL;
 }
 
 /* PULL Instructions ******************************************************* */
 
 #define PullW(w) \
-	w = S9xGetWord(Registers.S.W + 1, WRAP_BANK); \
-	Registers.S.W += 2;
+	w = S9xGetWord(CPU.Registers.S.W + 1, WRAP_BANK); \
+	CPU.Registers.S.W += 2;
 
 #define PullWE(w) \
-	Registers.SL++; \
-	w = S9xGetWord(Registers.S.W, WRAP_PAGE); \
-	Registers.SL++;
+	CPU.Registers.SL++; \
+	w = S9xGetWord(CPU.Registers.S.W, WRAP_PAGE); \
+	CPU.Registers.SL++;
 
 #define PullB(b) \
-	b = S9xGetByte(++Registers.S.W);
+	b = S9xGetByte(++CPU.Registers.S.W);
 
 #define PullBE(b) \
-	Registers.SL++; \
-	b = S9xGetByte(Registers.S.W);
+	CPU.Registers.SL++; \
+	b = S9xGetByte(CPU.Registers.S.W);
 
 // PLA
 static void Op68E1 (void)
 {
 	AddCycles(TWO_CYCLES);
-	PullBE(Registers.AL);
-	SetZN(Registers.AL);
-	OpenBus = Registers.AL;
+	PullBE(CPU.Registers.AL);
+	SetZN(CPU.Registers.AL);
+	OpenBus = CPU.Registers.AL;
 }
 
 static void Op68E0M1 (void)
 {
 	AddCycles(TWO_CYCLES);
-	PullB(Registers.AL);
-	SetZN(Registers.AL);
-	OpenBus = Registers.AL;
+	PullB(CPU.Registers.AL);
+	SetZN(CPU.Registers.AL);
+	OpenBus = CPU.Registers.AL;
 }
 
 static void Op68E0M0 (void)
 {
 	AddCycles(TWO_CYCLES);
-	PullW(Registers.A.W);
-	SetZN(Registers.A.W);
-	OpenBus = Registers.AH;
+	PullW(CPU.Registers.A.W);
+	SetZN(CPU.Registers.A.W);
+	OpenBus = CPU.Registers.AH;
 }
 
 static void Op68Slow (void)
@@ -2171,22 +2171,22 @@ static void Op68Slow (void)
 
 	if (CheckEmulation())
 	{
-		PullBE(Registers.AL);
-		SetZN(Registers.AL);
-		OpenBus = Registers.AL;
+		PullBE(CPU.Registers.AL);
+		SetZN(CPU.Registers.AL);
+		OpenBus = CPU.Registers.AL;
 	}
 	else
 	if (CheckMemory())
 	{
-		PullB(Registers.AL);
-		SetZN(Registers.AL);
-		OpenBus = Registers.AL;
+		PullB(CPU.Registers.AL);
+		SetZN(CPU.Registers.AL);
+		OpenBus = CPU.Registers.AL;
 	}
 	else
 	{
-		PullW(Registers.A.W);
-		SetZN(Registers.A.W);
-		OpenBus = Registers.AH;
+		PullW(CPU.Registers.A.W);
+		SetZN(CPU.Registers.A.W);
+		OpenBus = CPU.Registers.AH;
 	}
 }
 
@@ -2194,19 +2194,19 @@ static void Op68Slow (void)
 static void OpABE1 (void)
 {
 	AddCycles(TWO_CYCLES);
-	PullBE(Registers.DB);
-	SetZN(Registers.DB);
-	ICPU.ShiftedDB = Registers.DB << 16;
-	OpenBus = Registers.DB;
+	PullBE(CPU.Registers.DB);
+	SetZN(CPU.Registers.DB);
+	ICPU.ShiftedDB = CPU.Registers.DB << 16;
+	OpenBus = CPU.Registers.DB;
 }
 
 static void OpABE0 (void)
 {
 	AddCycles(TWO_CYCLES);
-	PullB(Registers.DB);
-	SetZN(Registers.DB);
-	ICPU.ShiftedDB = Registers.DB << 16;
-	OpenBus = Registers.DB;
+	PullB(CPU.Registers.DB);
+	SetZN(CPU.Registers.DB);
+	ICPU.ShiftedDB = CPU.Registers.DB << 16;
+	OpenBus = CPU.Registers.DB;
 }
 
 static void OpABSlow (void)
@@ -2215,25 +2215,25 @@ static void OpABSlow (void)
 
 	if (CheckEmulation())
 	{
-		PullBE(Registers.DB);
+		PullBE(CPU.Registers.DB);
 	}
 	else
 	{
-		PullB(Registers.DB);
+		PullB(CPU.Registers.DB);
 	}
 
-	SetZN(Registers.DB);
-	ICPU.ShiftedDB = Registers.DB << 16;
-	OpenBus = Registers.DB;
+	SetZN(CPU.Registers.DB);
+	ICPU.ShiftedDB = CPU.Registers.DB << 16;
+	OpenBus = CPU.Registers.DB;
 }
 
 // PLD
 static void Op2BE0 (void)
 {
 	AddCycles(TWO_CYCLES);
-	PullW(Registers.D.W);
-	SetZN(Registers.D.W);
-	OpenBus = Registers.DH;
+	PullW(CPU.Registers.D.W);
+	SetZN(CPU.Registers.D.W);
+	OpenBus = CPU.Registers.DH;
 }
 
 static void Op2BE1 (void)
@@ -2241,28 +2241,28 @@ static void Op2BE1 (void)
 	// Note: PLD is a new instruction,
 	// and so doesn't respect the emu-mode stack bounds.
 	AddCycles(TWO_CYCLES);
-	PullW(Registers.D.W);
-	SetZN(Registers.D.W);
-	OpenBus = Registers.DH;
-	Registers.SH = 1;
+	PullW(CPU.Registers.D.W);
+	SetZN(CPU.Registers.D.W);
+	OpenBus = CPU.Registers.DH;
+	CPU.Registers.SH = 1;
 }
 
 static void Op2BSlow (void)
 {
 	AddCycles(TWO_CYCLES);
-	PullW(Registers.D.W);
-	SetZN(Registers.D.W);
-	OpenBus = Registers.DH;
+	PullW(CPU.Registers.D.W);
+	SetZN(CPU.Registers.D.W);
+	OpenBus = CPU.Registers.DH;
 	if (CheckEmulation())
-		Registers.SH = 1;
+		CPU.Registers.SH = 1;
 }
 
 // PLP
 static void Op28E1 (void)
 {
 	AddCycles(TWO_CYCLES);
-	PullBE(Registers.PL);
-	OpenBus = Registers.PL;
+	PullBE(CPU.Registers.PL);
+	OpenBus = CPU.Registers.PL;
 	SetFlags(MemoryFlag | IndexFlag);
 	S9xUnpackStatus();
 	S9xFixCycles();
@@ -2272,14 +2272,14 @@ static void Op28E1 (void)
 static void Op28E0 (void)
 {
 	AddCycles(TWO_CYCLES);
-	PullB(Registers.PL);
-	OpenBus = Registers.PL;
+	PullB(CPU.Registers.PL);
+	OpenBus = CPU.Registers.PL;
 	S9xUnpackStatus();
 
 	if (CheckIndex())
 	{
-		Registers.XH = 0;
-		Registers.YH = 0;
+		CPU.Registers.XH = 0;
+		CPU.Registers.YH = 0;
 	}
 
 	S9xFixCycles();
@@ -2292,22 +2292,22 @@ static void Op28Slow (void)
 
 	if (CheckEmulation())
 	{
-		PullBE(Registers.PL);
-		OpenBus = Registers.PL;
+		PullBE(CPU.Registers.PL);
+		OpenBus = CPU.Registers.PL;
 		SetFlags(MemoryFlag | IndexFlag);
 	}
 	else
 	{
-		PullB(Registers.PL);
-		OpenBus = Registers.PL;
+		PullB(CPU.Registers.PL);
+		OpenBus = CPU.Registers.PL;
 	}
 
 	S9xUnpackStatus();
 
 	if (CheckIndex())
 	{
-		Registers.XH = 0;
-		Registers.YH = 0;
+		CPU.Registers.XH = 0;
+		CPU.Registers.YH = 0;
 	}
 
 	S9xFixCycles();
@@ -2318,25 +2318,25 @@ static void Op28Slow (void)
 static void OpFAE1 (void)
 {
 	AddCycles(TWO_CYCLES);
-	PullBE(Registers.XL);
-	SetZN(Registers.XL);
-	OpenBus = Registers.XL;
+	PullBE(CPU.Registers.XL);
+	SetZN(CPU.Registers.XL);
+	OpenBus = CPU.Registers.XL;
 }
 
 static void OpFAE0X1 (void)
 {
 	AddCycles(TWO_CYCLES);
-	PullB(Registers.XL);
-	SetZN(Registers.XL);
-	OpenBus = Registers.XL;
+	PullB(CPU.Registers.XL);
+	SetZN(CPU.Registers.XL);
+	OpenBus = CPU.Registers.XL;
 }
 
 static void OpFAE0X0 (void)
 {
 	AddCycles(TWO_CYCLES);
-	PullW(Registers.X.W);
-	SetZN(Registers.X.W);
-	OpenBus = Registers.XH;
+	PullW(CPU.Registers.X.W);
+	SetZN(CPU.Registers.X.W);
+	OpenBus = CPU.Registers.XH;
 }
 
 static void OpFASlow (void)
@@ -2345,22 +2345,22 @@ static void OpFASlow (void)
 
 	if (CheckEmulation())
 	{
-		PullBE(Registers.XL);
-		SetZN(Registers.XL);
-		OpenBus = Registers.XL;
+		PullBE(CPU.Registers.XL);
+		SetZN(CPU.Registers.XL);
+		OpenBus = CPU.Registers.XL;
 	}
 	else
 	if (CheckIndex())
 	{
-		PullB(Registers.XL);
-		SetZN(Registers.XL);
-		OpenBus = Registers.XL;
+		PullB(CPU.Registers.XL);
+		SetZN(CPU.Registers.XL);
+		OpenBus = CPU.Registers.XL;
 	}
 	else
 	{
-		PullW(Registers.X.W);
-		SetZN(Registers.X.W);
-		OpenBus = Registers.XH;
+		PullW(CPU.Registers.X.W);
+		SetZN(CPU.Registers.X.W);
+		OpenBus = CPU.Registers.XH;
 	}
 }
 
@@ -2368,25 +2368,25 @@ static void OpFASlow (void)
 static void Op7AE1 (void)
 {
 	AddCycles(TWO_CYCLES);
-	PullBE(Registers.YL);
-	SetZN(Registers.YL);
-	OpenBus = Registers.YL;
+	PullBE(CPU.Registers.YL);
+	SetZN(CPU.Registers.YL);
+	OpenBus = CPU.Registers.YL;
 }
 
 static void Op7AE0X1 (void)
 {
 	AddCycles(TWO_CYCLES);
-	PullB(Registers.YL);
-	SetZN(Registers.YL);
-	OpenBus = Registers.YL;
+	PullB(CPU.Registers.YL);
+	SetZN(CPU.Registers.YL);
+	OpenBus = CPU.Registers.YL;
 }
 
 static void Op7AE0X0 (void)
 {
 	AddCycles(TWO_CYCLES);
-	PullW(Registers.Y.W);
-	SetZN(Registers.Y.W);
-	OpenBus = Registers.YH;
+	PullW(CPU.Registers.Y.W);
+	SetZN(CPU.Registers.Y.W);
+	OpenBus = CPU.Registers.YH;
 }
 
 static void Op7ASlow (void)
@@ -2395,22 +2395,22 @@ static void Op7ASlow (void)
 
 	if (CheckEmulation())
 	{
-		PullBE(Registers.YL);
-		SetZN(Registers.YL);
-		OpenBus = Registers.YL;
+		PullBE(CPU.Registers.YL);
+		SetZN(CPU.Registers.YL);
+		OpenBus = CPU.Registers.YL;
 	}
 	else
 	if (CheckIndex())
 	{
-		PullB(Registers.YL);
-		SetZN(Registers.YL);
-		OpenBus = Registers.YL;
+		PullB(CPU.Registers.YL);
+		SetZN(CPU.Registers.YL);
+		OpenBus = CPU.Registers.YL;
 	}
 	else
 	{
-		PullW(Registers.Y.W);
-		SetZN(Registers.Y.W);
-		OpenBus = Registers.YH;
+		PullW(CPU.Registers.Y.W);
+		SetZN(CPU.Registers.Y.W);
+		OpenBus = CPU.Registers.YH;
 	}
 }
 
@@ -2420,15 +2420,15 @@ static void Op7ASlow (void)
 static void OpAAX1 (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.XL = Registers.AL;
-	SetZN(Registers.XL);
+	CPU.Registers.XL = CPU.Registers.AL;
+	SetZN(CPU.Registers.XL);
 }
 
 static void OpAAX0 (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.X.W = Registers.A.W;
-	SetZN(Registers.X.W);
+	CPU.Registers.X.W = CPU.Registers.A.W;
+	SetZN(CPU.Registers.X.W);
 }
 
 static void OpAASlow (void)
@@ -2437,13 +2437,13 @@ static void OpAASlow (void)
 
 	if (CheckIndex())
 	{
-		Registers.XL = Registers.AL;
-		SetZN(Registers.XL);
+		CPU.Registers.XL = CPU.Registers.AL;
+		SetZN(CPU.Registers.XL);
 	}
 	else
 	{
-		Registers.X.W = Registers.A.W;
-		SetZN(Registers.X.W);
+		CPU.Registers.X.W = CPU.Registers.A.W;
+		SetZN(CPU.Registers.X.W);
 	}
 }
 
@@ -2451,15 +2451,15 @@ static void OpAASlow (void)
 static void OpA8X1 (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.YL = Registers.AL;
-	SetZN(Registers.YL);
+	CPU.Registers.YL = CPU.Registers.AL;
+	SetZN(CPU.Registers.YL);
 }
 
 static void OpA8X0 (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.Y.W = Registers.A.W;
-	SetZN(Registers.Y.W);
+	CPU.Registers.Y.W = CPU.Registers.A.W;
+	SetZN(CPU.Registers.Y.W);
 }
 
 static void OpA8Slow (void)
@@ -2468,13 +2468,13 @@ static void OpA8Slow (void)
 
 	if (CheckIndex())
 	{
-		Registers.YL = Registers.AL;
-		SetZN(Registers.YL);
+		CPU.Registers.YL = CPU.Registers.AL;
+		SetZN(CPU.Registers.YL);
 	}
 	else
 	{
-		Registers.Y.W = Registers.A.W;
-		SetZN(Registers.Y.W);
+		CPU.Registers.Y.W = CPU.Registers.A.W;
+		SetZN(CPU.Registers.Y.W);
 	}
 }
 
@@ -2482,48 +2482,48 @@ static void OpA8Slow (void)
 static void Op5B (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.D.W = Registers.A.W;
-	SetZN(Registers.D.W);
+	CPU.Registers.D.W = CPU.Registers.A.W;
+	SetZN(CPU.Registers.D.W);
 }
 
 // TCS
 static void Op1B (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.S.W = Registers.A.W;
+	CPU.Registers.S.W = CPU.Registers.A.W;
 	if (CheckEmulation())
-		Registers.SH = 1;
+		CPU.Registers.SH = 1;
 }
 
 // TDC
 static void Op7B (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.A.W = Registers.D.W;
-	SetZN(Registers.A.W);
+	CPU.Registers.A.W = CPU.Registers.D.W;
+	SetZN(CPU.Registers.A.W);
 }
 
 // TSC
 static void Op3B (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.A.W = Registers.S.W;
-	SetZN(Registers.A.W);
+	CPU.Registers.A.W = CPU.Registers.S.W;
+	SetZN(CPU.Registers.A.W);
 }
 
 // TSX
 static void OpBAX1 (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.XL = Registers.SL;
-	SetZN(Registers.XL);
+	CPU.Registers.XL = CPU.Registers.SL;
+	SetZN(CPU.Registers.XL);
 }
 
 static void OpBAX0 (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.X.W = Registers.S.W;
-	SetZN(Registers.X.W);
+	CPU.Registers.X.W = CPU.Registers.S.W;
+	SetZN(CPU.Registers.X.W);
 }
 
 static void OpBASlow (void)
@@ -2532,13 +2532,13 @@ static void OpBASlow (void)
 
 	if (CheckIndex())
 	{
-		Registers.XL = Registers.SL;
-		SetZN(Registers.XL);
+		CPU.Registers.XL = CPU.Registers.SL;
+		SetZN(CPU.Registers.XL);
 	}
 	else
 	{
-		Registers.X.W = Registers.S.W;
-		SetZN(Registers.X.W);
+		CPU.Registers.X.W = CPU.Registers.S.W;
+		SetZN(CPU.Registers.X.W);
 	}
 }
 
@@ -2546,15 +2546,15 @@ static void OpBASlow (void)
 static void Op8AM1 (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.AL = Registers.XL;
-	SetZN(Registers.AL);
+	CPU.Registers.AL = CPU.Registers.XL;
+	SetZN(CPU.Registers.AL);
 }
 
 static void Op8AM0 (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.A.W = Registers.X.W;
-	SetZN(Registers.A.W);
+	CPU.Registers.A.W = CPU.Registers.X.W;
+	SetZN(CPU.Registers.A.W);
 }
 
 static void Op8ASlow (void)
@@ -2563,13 +2563,13 @@ static void Op8ASlow (void)
 
 	if (CheckMemory())
 	{
-		Registers.AL = Registers.XL;
-		SetZN(Registers.AL);
+		CPU.Registers.AL = CPU.Registers.XL;
+		SetZN(CPU.Registers.AL);
 	}
 	else
 	{
-		Registers.A.W = Registers.X.W;
-		SetZN(Registers.A.W);
+		CPU.Registers.A.W = CPU.Registers.X.W;
+		SetZN(CPU.Registers.A.W);
 	}
 }
 
@@ -2577,24 +2577,24 @@ static void Op8ASlow (void)
 static void Op9A (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.S.W = Registers.X.W;
+	CPU.Registers.S.W = CPU.Registers.X.W;
 	if (CheckEmulation())
-		Registers.SH = 1;
+		CPU.Registers.SH = 1;
 }
 
 // TXY
 static void Op9BX1 (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.YL = Registers.XL;
-	SetZN(Registers.YL);
+	CPU.Registers.YL = CPU.Registers.XL;
+	SetZN(CPU.Registers.YL);
 }
 
 static void Op9BX0 (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.Y.W = Registers.X.W;
-	SetZN(Registers.Y.W);
+	CPU.Registers.Y.W = CPU.Registers.X.W;
+	SetZN(CPU.Registers.Y.W);
 }
 
 static void Op9BSlow (void)
@@ -2603,13 +2603,13 @@ static void Op9BSlow (void)
 
 	if (CheckIndex())
 	{
-		Registers.YL = Registers.XL;
-		SetZN(Registers.YL);
+		CPU.Registers.YL = CPU.Registers.XL;
+		SetZN(CPU.Registers.YL);
 	}
 	else
 	{
-		Registers.Y.W = Registers.X.W;
-		SetZN(Registers.Y.W);
+		CPU.Registers.Y.W = CPU.Registers.X.W;
+		SetZN(CPU.Registers.Y.W);
 	}
 }
 
@@ -2617,15 +2617,15 @@ static void Op9BSlow (void)
 static void Op98M1 (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.AL = Registers.YL;
-	SetZN(Registers.AL);
+	CPU.Registers.AL = CPU.Registers.YL;
+	SetZN(CPU.Registers.AL);
 }
 
 static void Op98M0 (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.A.W = Registers.Y.W;
-	SetZN(Registers.A.W);
+	CPU.Registers.A.W = CPU.Registers.Y.W;
+	SetZN(CPU.Registers.A.W);
 }
 
 static void Op98Slow (void)
@@ -2634,13 +2634,13 @@ static void Op98Slow (void)
 
 	if (CheckMemory())
 	{
-		Registers.AL = Registers.YL;
-		SetZN(Registers.AL);
+		CPU.Registers.AL = CPU.Registers.YL;
+		SetZN(CPU.Registers.AL);
 	}
 	else
 	{
-		Registers.A.W = Registers.Y.W;
-		SetZN(Registers.A.W);
+		CPU.Registers.A.W = CPU.Registers.Y.W;
+		SetZN(CPU.Registers.A.W);
 	}
 }
 
@@ -2648,15 +2648,15 @@ static void Op98Slow (void)
 static void OpBBX1 (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.XL = Registers.YL;
-	SetZN(Registers.XL);
+	CPU.Registers.XL = CPU.Registers.YL;
+	SetZN(CPU.Registers.XL);
 }
 
 static void OpBBX0 (void)
 {
 	AddCycles(ONE_CYCLE);
-	Registers.X.W = Registers.Y.W;
-	SetZN(Registers.X.W);
+	CPU.Registers.X.W = CPU.Registers.Y.W;
+	SetZN(CPU.Registers.X.W);
 }
 
 static void OpBBSlow (void)
@@ -2665,13 +2665,13 @@ static void OpBBSlow (void)
 
 	if (CheckIndex())
 	{
-		Registers.XL = Registers.YL;
-		SetZN(Registers.XL);
+		CPU.Registers.XL = CPU.Registers.YL;
+		SetZN(CPU.Registers.XL);
 	}
 	else
 	{
-		Registers.X.W = Registers.Y.W;
-		SetZN(Registers.X.W);
+		CPU.Registers.X.W = CPU.Registers.Y.W;
+		SetZN(CPU.Registers.X.W);
 	}
 }
 
@@ -2682,15 +2682,15 @@ static void OpFB (void)
 	AddCycles(ONE_CYCLE);
 
 	uint8	A1 = ICPU._Carry;
-	uint8	A2 = Registers.PH;
+	uint8	A2 = CPU.Registers.PH;
 
 	ICPU._Carry = A2 & 1;
-	Registers.PH = A1;
+	CPU.Registers.PH = A1;
 
 	if (CheckEmulation())
 	{
 		SetFlags(MemoryFlag | IndexFlag);
-		Registers.SH = 1;
+		CPU.Registers.SH = 1;
 	#ifdef DEBUGGER
 		missing.emulate6502 = 1;
 	#endif
@@ -2698,8 +2698,8 @@ static void OpFB (void)
 
 	if (CheckIndex())
 	{
-		Registers.XH = 0;
-		Registers.YH = 0;
+		CPU.Registers.XH = 0;
+		CPU.Registers.YH = 0;
 	}
 
 	S9xFixCycles();
@@ -2720,11 +2720,11 @@ static void Op00 (void)
 
 	if (!CheckEmulation())
 	{
-		PushB(Registers.PB);
-		PushW(Registers.PCw + 1);
+		PushB(CPU.Registers.PB);
+		PushW(CPU.Registers.PCw + 1);
 		S9xPackStatus();
-		PushB(Registers.PL);
-		OpenBus = Registers.PL;
+		PushB(CPU.Registers.PL);
+		OpenBus = CPU.Registers.PL;
 		ClearDecimal();
 		SetIRQ();
 
@@ -2732,10 +2732,10 @@ static void Op00 (void)
 	}
 	else
 	{
-		PushWE(Registers.PCw + 1);
+		PushWE(CPU.Registers.PCw + 1);
 		S9xPackStatus();
-		PushBE(Registers.PL);
-		OpenBus = Registers.PL;
+		PushBE(CPU.Registers.PL);
+		OpenBus = CPU.Registers.PL;
 		ClearDecimal();
 		SetIRQ();
 
@@ -2764,11 +2764,11 @@ void S9xOpcode_IRQ (void)
 
 	if (!CheckEmulation())
 	{
-		PushB(Registers.PB);
-		PushW(Registers.PCw);
+		PushB(CPU.Registers.PB);
+		PushW(CPU.Registers.PCw);
 		S9xPackStatus();
-		PushB(Registers.PL);
-		OpenBus = Registers.PL;
+		PushB(CPU.Registers.PL);
+		OpenBus = CPU.Registers.PL;
 		ClearDecimal();
 		SetIRQ();
 
@@ -2793,10 +2793,10 @@ void S9xOpcode_IRQ (void)
 	}
 	else
 	{
-		PushWE(Registers.PCw);
+		PushWE(CPU.Registers.PCw);
 		S9xPackStatus();
-		PushBE(Registers.PL);
-		OpenBus = Registers.PL;
+		PushBE(CPU.Registers.PL);
+		OpenBus = CPU.Registers.PL;
 		ClearDecimal();
 		SetIRQ();
 
@@ -2839,11 +2839,11 @@ void S9xOpcode_NMI (void)
 
 	if (!CheckEmulation())
 	{
-		PushB(Registers.PB);
-		PushW(Registers.PCw);
+		PushB(CPU.Registers.PB);
+		PushW(CPU.Registers.PCw);
 		S9xPackStatus();
-		PushB(Registers.PL);
-		OpenBus = Registers.PL;
+		PushB(CPU.Registers.PL);
+		OpenBus = CPU.Registers.PL;
 		ClearDecimal();
 		SetIRQ();
 
@@ -2868,10 +2868,10 @@ void S9xOpcode_NMI (void)
 	}
 	else
 	{
-		PushWE(Registers.PCw);
+		PushWE(CPU.Registers.PCw);
 		S9xPackStatus();
-		PushBE(Registers.PL);
-		OpenBus = Registers.PL;
+		PushBE(CPU.Registers.PL);
+		OpenBus = CPU.Registers.PL;
 		ClearDecimal();
 		SetIRQ();
 
@@ -2911,11 +2911,11 @@ static void Op02 (void)
 
 	if (!CheckEmulation())
 	{
-		PushB(Registers.PB);
-		PushW(Registers.PCw + 1);
+		PushB(CPU.Registers.PB);
+		PushW(CPU.Registers.PCw + 1);
 		S9xPackStatus();
-		PushB(Registers.PL);
-		OpenBus = Registers.PL;
+		PushB(CPU.Registers.PL);
+		OpenBus = CPU.Registers.PL;
 		ClearDecimal();
 		SetIRQ();
 
@@ -2923,10 +2923,10 @@ static void Op02 (void)
 	}
 	else
 	{
-		PushWE(Registers.PCw + 1);
+		PushWE(CPU.Registers.PCw + 1);
 		S9xPackStatus();
-		PushBE(Registers.PL);
-		OpenBus = Registers.PL;
+		PushBE(CPU.Registers.PL);
+		OpenBus = CPU.Registers.PL;
 		ClearDecimal();
 		SetIRQ();
 
@@ -2998,27 +2998,27 @@ static void Op22E1 (void)
 	// Note: JSL is a new instruction,
 	// and so doesn't respect the emu-mode stack bounds.
 	uint32	addr = AbsoluteLong(JSR);
-	PushB(Registers.PB);
-	PushW(Registers.PCw - 1);
-	Registers.SH = 1;
+	PushB(CPU.Registers.PB);
+	PushW(CPU.Registers.PCw - 1);
+	CPU.Registers.SH = 1;
 	S9xSetPCBase(addr);
 }
 
 static void Op22E0 (void)
 {
 	uint32	addr = AbsoluteLong(JSR);
-	PushB(Registers.PB);
-	PushW(Registers.PCw - 1);
+	PushB(CPU.Registers.PB);
+	PushW(CPU.Registers.PCw - 1);
 	S9xSetPCBase(addr);
 }
 
 static void Op22Slow (void)
 {
 	uint32	addr = AbsoluteLongSlow(JSR);
-	PushB(Registers.PB);
-	PushW(Registers.PCw - 1);
+	PushB(CPU.Registers.PB);
+	PushW(CPU.Registers.PCw - 1);
 	if (CheckEmulation())
-		Registers.SH = 1;
+		CPU.Registers.SH = 1;
 	S9xSetPCBase(addr);
 }
 
@@ -3027,31 +3027,31 @@ static void Op6BE1 (void)
 	// Note: RTL is a new instruction,
 	// and so doesn't respect the emu-mode stack bounds.
 	AddCycles(TWO_CYCLES);
-	PullW(Registers.PCw);
-	PullB(Registers.PB);
-	Registers.SH = 1;
-	Registers.PCw++;
-	S9xSetPCBase(Registers.PBPC);
+	PullW(CPU.Registers.PCw);
+	PullB(CPU.Registers.PB);
+	CPU.Registers.SH = 1;
+	CPU.Registers.PCw++;
+	S9xSetPCBase(CPU.Registers.PBPC);
 }
 
 static void Op6BE0 (void)
 {
 	AddCycles(TWO_CYCLES);
-	PullW(Registers.PCw);
-	PullB(Registers.PB);
-	Registers.PCw++;
-	S9xSetPCBase(Registers.PBPC);
+	PullW(CPU.Registers.PCw);
+	PullB(CPU.Registers.PB);
+	CPU.Registers.PCw++;
+	S9xSetPCBase(CPU.Registers.PBPC);
 }
 
 static void Op6BSlow (void)
 {
 	AddCycles(TWO_CYCLES);
-	PullW(Registers.PCw);
-	PullB(Registers.PB);
+	PullW(CPU.Registers.PCw);
+	PullB(CPU.Registers.PB);
 	if (CheckEmulation())
-		Registers.SH = 1;
-	Registers.PCw++;
-	S9xSetPCBase(Registers.PBPC);
+		CPU.Registers.SH = 1;
+	CPU.Registers.PCw++;
+	S9xSetPCBase(CPU.Registers.PBPC);
 }
 
 /* JSR/RTS ***************************************************************** */
@@ -3060,7 +3060,7 @@ static void Op20E1 (void)
 {
 	uint16	addr = Absolute(JSR);
 	AddCycles(ONE_CYCLE);
-	PushWE(Registers.PCw - 1);
+	PushWE(CPU.Registers.PCw - 1);
 	S9xSetPCBase(ICPU.ShiftedPB + addr);
 }
 
@@ -3068,7 +3068,7 @@ static void Op20E0 (void)
 {
 	uint16	addr = Absolute(JSR);
 	AddCycles(ONE_CYCLE);
-	PushW(Registers.PCw - 1);
+	PushW(CPU.Registers.PCw - 1);
 	S9xSetPCBase(ICPU.ShiftedPB + addr);
 }
 
@@ -3080,11 +3080,11 @@ static void Op20Slow (void)
 
 	if (CheckEmulation())
 	{
-		PushWE(Registers.PCw - 1);
+		PushWE(CPU.Registers.PCw - 1);
 	}
 	else
 	{
-		PushW(Registers.PCw - 1);
+		PushW(CPU.Registers.PCw - 1);
 	}
 
 	S9xSetPCBase(ICPU.ShiftedPB + addr);
@@ -3095,43 +3095,43 @@ static void OpFCE1 (void)
 	// Note: JSR (a,X) is a new instruction,
 	// and so doesn't respect the emu-mode stack bounds.
 	uint16	addr = AbsoluteIndexedIndirect(JSR);
-	PushW(Registers.PCw - 1);
-	Registers.SH = 1;
+	PushW(CPU.Registers.PCw - 1);
+	CPU.Registers.SH = 1;
 	S9xSetPCBase(ICPU.ShiftedPB + addr);
 }
 
 static void OpFCE0 (void)
 {
 	uint16	addr = AbsoluteIndexedIndirect(JSR);
-	PushW(Registers.PCw - 1);
+	PushW(CPU.Registers.PCw - 1);
 	S9xSetPCBase(ICPU.ShiftedPB + addr);
 }
 
 static void OpFCSlow (void)
 {
 	uint16	addr = AbsoluteIndexedIndirectSlow(JSR);
-	PushW(Registers.PCw - 1);
+	PushW(CPU.Registers.PCw - 1);
 	if (CheckEmulation())
-		Registers.SH = 1;
+		CPU.Registers.SH = 1;
 	S9xSetPCBase(ICPU.ShiftedPB + addr);
 }
 
 static void Op60E1 (void)
 {
 	AddCycles(TWO_CYCLES);
-	PullWE(Registers.PCw);
+	PullWE(CPU.Registers.PCw);
 	AddCycles(ONE_CYCLE);
-	Registers.PCw++;
-	S9xSetPCBase(Registers.PBPC);
+	CPU.Registers.PCw++;
+	S9xSetPCBase(CPU.Registers.PBPC);
 }
 
 static void Op60E0 (void)
 {
 	AddCycles(TWO_CYCLES);
-	PullW(Registers.PCw);
+	PullW(CPU.Registers.PCw);
 	AddCycles(ONE_CYCLE);
-	Registers.PCw++;
-	S9xSetPCBase(Registers.PBPC);
+	CPU.Registers.PCw++;
+	S9xSetPCBase(CPU.Registers.PBPC);
 }
 
 static void Op60Slow (void)
@@ -3140,16 +3140,16 @@ static void Op60Slow (void)
 
 	if (CheckEmulation())
 	{
-		PullWE(Registers.PCw);
+		PullWE(CPU.Registers.PCw);
 	}
 	else
 	{
-		PullW(Registers.PCw);
+		PullW(CPU.Registers.PCw);
 	}
 
 	AddCycles(ONE_CYCLE);
-	Registers.PCw++;
-	S9xSetPCBase(Registers.PBPC);
+	CPU.Registers.PCw++;
+	S9xSetPCBase(CPU.Registers.PBPC);
 }
 
 /* MVN/MVP ***************************************************************** */
@@ -3158,17 +3158,17 @@ static void Op54X1 (void)
 {
 	uint32	SrcBank;
 
-	Registers.DB = Immediate8(NONE);
-	ICPU.ShiftedDB = Registers.DB << 16;
+	CPU.Registers.DB = Immediate8(NONE);
+	ICPU.ShiftedDB = CPU.Registers.DB << 16;
 	OpenBus = SrcBank = Immediate8(NONE);
 
-	S9xSetByte(OpenBus = S9xGetByte((SrcBank << 16) + Registers.X.W), ICPU.ShiftedDB + Registers.Y.W);
+	S9xSetByte(OpenBus = S9xGetByte((SrcBank << 16) + CPU.Registers.X.W), ICPU.ShiftedDB + CPU.Registers.Y.W);
 
-	Registers.XL++;
-	Registers.YL++;
-	Registers.A.W--;
-	if (Registers.A.W != 0xffff)
-		Registers.PCw -= 3;
+	CPU.Registers.XL++;
+	CPU.Registers.YL++;
+	CPU.Registers.A.W--;
+	if (CPU.Registers.A.W != 0xffff)
+		CPU.Registers.PCw -= 3;
 
 	AddCycles(TWO_CYCLES);
 }
@@ -3177,17 +3177,17 @@ static void Op54X0 (void)
 {
 	uint32	SrcBank;
 
-	Registers.DB = Immediate8(NONE);
-	ICPU.ShiftedDB = Registers.DB << 16;
+	CPU.Registers.DB = Immediate8(NONE);
+	ICPU.ShiftedDB = CPU.Registers.DB << 16;
 	OpenBus = SrcBank = Immediate8(NONE);
 
-	S9xSetByte(OpenBus = S9xGetByte((SrcBank << 16) + Registers.X.W), ICPU.ShiftedDB + Registers.Y.W);
+	S9xSetByte(OpenBus = S9xGetByte((SrcBank << 16) + CPU.Registers.X.W), ICPU.ShiftedDB + CPU.Registers.Y.W);
 
-	Registers.X.W++;
-	Registers.Y.W++;
-	Registers.A.W--;
-	if (Registers.A.W != 0xffff)
-		Registers.PCw -= 3;
+	CPU.Registers.X.W++;
+	CPU.Registers.Y.W++;
+	CPU.Registers.A.W--;
+	if (CPU.Registers.A.W != 0xffff)
+		CPU.Registers.PCw -= 3;
 
 	AddCycles(TWO_CYCLES);
 }
@@ -3196,26 +3196,26 @@ static void Op54Slow (void)
 {
 	uint32	SrcBank;
 
-	OpenBus = Registers.DB = Immediate8Slow(NONE);
-	ICPU.ShiftedDB = Registers.DB << 16;
+	OpenBus = CPU.Registers.DB = Immediate8Slow(NONE);
+	ICPU.ShiftedDB = CPU.Registers.DB << 16;
 	OpenBus = SrcBank = Immediate8Slow(NONE);
 
-	S9xSetByte(OpenBus = S9xGetByte((SrcBank << 16) + Registers.X.W), ICPU.ShiftedDB + Registers.Y.W);
+	S9xSetByte(OpenBus = S9xGetByte((SrcBank << 16) + CPU.Registers.X.W), ICPU.ShiftedDB + CPU.Registers.Y.W);
 
 	if (CheckIndex())
 	{
-		Registers.XL++;
-		Registers.YL++;
+		CPU.Registers.XL++;
+		CPU.Registers.YL++;
 	}
 	else
 	{
-		Registers.X.W++;
-		Registers.Y.W++;
+		CPU.Registers.X.W++;
+		CPU.Registers.Y.W++;
 	}
 
-	Registers.A.W--;
-	if (Registers.A.W != 0xffff)
-		Registers.PCw -= 3;
+	CPU.Registers.A.W--;
+	if (CPU.Registers.A.W != 0xffff)
+		CPU.Registers.PCw -= 3;
 
 	AddCycles(TWO_CYCLES);
 }
@@ -3224,17 +3224,17 @@ static void Op44X1 (void)
 {
 	uint32	SrcBank;
 
-	Registers.DB = Immediate8(NONE);
-	ICPU.ShiftedDB = Registers.DB << 16;
+	CPU.Registers.DB = Immediate8(NONE);
+	ICPU.ShiftedDB = CPU.Registers.DB << 16;
 	OpenBus = SrcBank = Immediate8(NONE);
 
-	S9xSetByte(OpenBus = S9xGetByte((SrcBank << 16) + Registers.X.W), ICPU.ShiftedDB + Registers.Y.W);
+	S9xSetByte(OpenBus = S9xGetByte((SrcBank << 16) + CPU.Registers.X.W), ICPU.ShiftedDB + CPU.Registers.Y.W);
 
-	Registers.XL--;
-	Registers.YL--;
-	Registers.A.W--;
-	if (Registers.A.W != 0xffff)
-		Registers.PCw -= 3;
+	CPU.Registers.XL--;
+	CPU.Registers.YL--;
+	CPU.Registers.A.W--;
+	if (CPU.Registers.A.W != 0xffff)
+		CPU.Registers.PCw -= 3;
 
 	AddCycles(TWO_CYCLES);
 }
@@ -3243,17 +3243,17 @@ static void Op44X0 (void)
 {
 	uint32	SrcBank;
 
-	Registers.DB = Immediate8(NONE);
-	ICPU.ShiftedDB = Registers.DB << 16;
+	CPU.Registers.DB = Immediate8(NONE);
+	ICPU.ShiftedDB = CPU.Registers.DB << 16;
 	OpenBus = SrcBank = Immediate8(NONE);
 
-	S9xSetByte(OpenBus = S9xGetByte((SrcBank << 16) + Registers.X.W), ICPU.ShiftedDB + Registers.Y.W);
+	S9xSetByte(OpenBus = S9xGetByte((SrcBank << 16) + CPU.Registers.X.W), ICPU.ShiftedDB + CPU.Registers.Y.W);
 
-	Registers.X.W--;
-	Registers.Y.W--;
-	Registers.A.W--;
-	if (Registers.A.W != 0xffff)
-		Registers.PCw -= 3;
+	CPU.Registers.X.W--;
+	CPU.Registers.Y.W--;
+	CPU.Registers.A.W--;
+	if (CPU.Registers.A.W != 0xffff)
+		CPU.Registers.PCw -= 3;
 
 	AddCycles(TWO_CYCLES);
 }
@@ -3262,26 +3262,26 @@ static void Op44Slow (void)
 {
 	uint32	SrcBank;
 
-	OpenBus = Registers.DB = Immediate8Slow(NONE);
-	ICPU.ShiftedDB = Registers.DB << 16;
+	OpenBus = CPU.Registers.DB = Immediate8Slow(NONE);
+	ICPU.ShiftedDB = CPU.Registers.DB << 16;
 	OpenBus = SrcBank = Immediate8Slow(NONE);
 
-	S9xSetByte(OpenBus = S9xGetByte((SrcBank << 16) + Registers.X.W), ICPU.ShiftedDB + Registers.Y.W);
+	S9xSetByte(OpenBus = S9xGetByte((SrcBank << 16) + CPU.Registers.X.W), ICPU.ShiftedDB + CPU.Registers.Y.W);
 
 	if (CheckIndex())
 	{
-		Registers.XL--;
-		Registers.YL--;
+		CPU.Registers.XL--;
+		CPU.Registers.YL--;
 	}
 	else
 	{
-		Registers.X.W--;
-		Registers.Y.W--;
+		CPU.Registers.X.W--;
+		CPU.Registers.Y.W--;
 	}
 
-	Registers.A.W--;
-	if (Registers.A.W != 0xffff)
-		Registers.PCw -= 3;
+	CPU.Registers.A.W--;
+	if (CPU.Registers.A.W != 0xffff)
+		CPU.Registers.PCw -= 3;
 
 	AddCycles(TWO_CYCLES);
 }
@@ -3291,7 +3291,7 @@ static void Op44Slow (void)
 static void OpC2 (void)
 {
 	uint8	Work8 = ~Immediate8(READ);
-	Registers.PL &= Work8;
+	CPU.Registers.PL &= Work8;
 	ICPU._Carry &= Work8;
 	ICPU._Overflow &= (Work8 >> 6);
 	ICPU._Negative &= Work8;
@@ -3309,8 +3309,8 @@ static void OpC2 (void)
 
 	if (CheckIndex())
 	{
-		Registers.XH = 0;
-		Registers.YH = 0;
+		CPU.Registers.XH = 0;
+		CPU.Registers.YH = 0;
 	}
 
 	S9xFixCycles();
@@ -3320,7 +3320,7 @@ static void OpC2 (void)
 static void OpC2Slow (void)
 {
 	uint8	Work8 = ~Immediate8Slow(READ);
-	Registers.PL &= Work8;
+	CPU.Registers.PL &= Work8;
 	ICPU._Carry &= Work8;
 	ICPU._Overflow &= (Work8 >> 6);
 	ICPU._Negative &= Work8;
@@ -3338,8 +3338,8 @@ static void OpC2Slow (void)
 
 	if (CheckIndex())
 	{
-		Registers.XH = 0;
-		Registers.YH = 0;
+		CPU.Registers.XH = 0;
+		CPU.Registers.YH = 0;
 	}
 
 	S9xFixCycles();
@@ -3349,7 +3349,7 @@ static void OpC2Slow (void)
 static void OpE2 (void)
 {
 	uint8	Work8 = Immediate8(READ);
-	Registers.PL |= Work8;
+	CPU.Registers.PL |= Work8;
 	ICPU._Carry |= Work8 & 1;
 	ICPU._Overflow |= (Work8 >> 6) & 1;
 	ICPU._Negative |= Work8;
@@ -3368,8 +3368,8 @@ static void OpE2 (void)
 
 	if (CheckIndex())
 	{
-		Registers.XH = 0;
-		Registers.YH = 0;
+		CPU.Registers.XH = 0;
+		CPU.Registers.YH = 0;
 	}
 
 	S9xFixCycles();
@@ -3378,7 +3378,7 @@ static void OpE2 (void)
 static void OpE2Slow (void)
 {
 	uint8	Work8 = Immediate8Slow(READ);
-	Registers.PL |= Work8;
+	CPU.Registers.PL |= Work8;
 	ICPU._Carry |= Work8 & 1;
 	ICPU._Overflow |= (Work8 >> 6) & 1;
 	ICPU._Negative |= Work8;
@@ -3397,8 +3397,8 @@ static void OpE2Slow (void)
 
 	if (CheckIndex())
 	{
-		Registers.XH = 0;
-		Registers.YH = 0;
+		CPU.Registers.XH = 0;
+		CPU.Registers.YH = 0;
 	}
 
 	S9xFixCycles();
@@ -3408,10 +3408,10 @@ static void OpE2Slow (void)
 
 static void OpEB (void)
 {
-	uint8	Work8 = Registers.AL;
-	Registers.AL = Registers.AH;
-	Registers.AH = Work8;
-	SetZN(Registers.AL);
+	uint8	Work8 = CPU.Registers.AL;
+	CPU.Registers.AL = CPU.Registers.AH;
+	CPU.Registers.AH = Work8;
+	SetZN(CPU.Registers.AL);
 	AddCycles(TWO_CYCLES);
 }
 
@@ -3423,31 +3423,31 @@ static void Op40Slow (void)
 
 	if (!CheckEmulation())
 	{
-		PullB(Registers.PL);
+		PullB(CPU.Registers.PL);
 		S9xUnpackStatus();
-		PullW(Registers.PCw);
-		PullB(Registers.PB);
-		OpenBus = Registers.PB;
-		ICPU.ShiftedPB = Registers.PB << 16;
+		PullW(CPU.Registers.PCw);
+		PullB(CPU.Registers.PB);
+		OpenBus = CPU.Registers.PB;
+		ICPU.ShiftedPB = CPU.Registers.PB << 16;
 	}
 	else
 	{
-		PullBE(Registers.PL);
+		PullBE(CPU.Registers.PL);
 		S9xUnpackStatus();
-		PullWE(Registers.PCw);
-		OpenBus = Registers.PCh;
+		PullWE(CPU.Registers.PCw);
+		OpenBus = CPU.Registers.PCh;
 		SetFlags(MemoryFlag | IndexFlag);
 	#ifdef DEBUGGER
 		missing.emulate6502 = 1;
 	#endif
 	}
 
-	S9xSetPCBase(Registers.PBPC);
+	S9xSetPCBase(CPU.Registers.PBPC);
 
 	if (CheckIndex())
 	{
-		Registers.XH = 0;
-		Registers.YH = 0;
+		CPU.Registers.XH = 0;
+		CPU.Registers.YH = 0;
 	}
 
 	S9xFixCycles();
@@ -3461,11 +3461,11 @@ static void OpCB (void)
 {
 #ifdef SA1_OPCODES
 	SA1.WaitingForInterrupt = TRUE;
-	Registers.PCw--;
+	CPU.Registers.PCw--;
 	AddCycles(TWO_CYCLES);
 #else
 	CPU.WaitingForInterrupt = TRUE;
-	Registers.PCw--;
+	CPU.Registers.PCw--;
 	AddCycles(TWO_CYCLES);
 #endif
 }
@@ -3473,7 +3473,7 @@ static void OpCB (void)
 // STP
 static void OpDB (void)
 {
-	Registers.PCw--;
+	CPU.Registers.PCw--;
 	CPU.Flags |= DEBUG_MODE_FLAG | HALTED_FLAG;
 }
 
@@ -3486,11 +3486,11 @@ extern FILE	*trace, *trace2;
 static void Op42 (void)
 {
 #ifdef DEBUGGER
-	uint8	byte = (uint8) S9xGetWord(Registers.PBPC);
+	uint8	byte = (uint8) S9xGetWord(CPU.Registers.PBPC);
 #else
-	S9xGetWord(Registers.PBPC);
+	S9xGetWord(CPU.Registers.PBPC);
 #endif
-	Registers.PCw++;
+	CPU.Registers.PCw++;
 
 #ifdef DEBUGGER
 	// Hey, let's use this to trigger debug modes.
@@ -3506,7 +3506,7 @@ static void Op42 (void)
 			{
 				char	buf[25];
 				CPU.Flags |= TRACE_FLAG;
-				snprintf(buf, 25, "WDM trace on at $%02X:%04X", Registers.PB, Registers.PCw);
+				snprintf(buf, 25, "WDM trace on at $%02X:%04X", CPU.Registers.PB, CPU.Registers.PCw);
 				S9xMessage(S9X_DEBUG, S9X_DEBUG_OUTPUT, buf);
 				if (trace != NULL)
 					fclose(trace);
@@ -3520,7 +3520,7 @@ static void Op42 (void)
 			{
 				char	buf[26];
 				CPU.Flags &= ~TRACE_FLAG;
-				snprintf(buf, 26, "WDM trace off at $%02X:%04X", Registers.PB, Registers.PCw);
+				snprintf(buf, 26, "WDM trace off at $%02X:%04X", CPU.Registers.PB, CPU.Registers.PCw);
 				S9xMessage(S9X_DEBUG, S9X_DEBUG_OUTPUT, buf);
 				if (trace != NULL)
 					fclose(trace);
@@ -3534,8 +3534,8 @@ static void Op42 (void)
 			char	filename[PATH_MAX + 1], drive[_MAX_DRIVE + 1], dir[_MAX_DIR + 1], def[PATH_MAX + 1], ext[_MAX_EXT + 1];
 
 			_splitpath(Memory.ROMFilename, drive, dir, def, ext);
-			snprintf(filename, PATH_MAX, "%s%s%s-%06X.wdm", S9xGetDirectory(SNAPSHOT_DIR), SLASH_STR, def, Registers.PBPC & 0xffffff);
-			sprintf(def, "WDM Snapshot at $%02X:%04X: %s", Registers.PB, Registers.PCw, filename);
+			snprintf(filename, PATH_MAX, "%s%s%s-%06X.wdm", S9xGetDirectory(SNAPSHOT_DIR), SLASH_STR, def, CPU.Registers.PBPC & 0xffffff);
+			sprintf(def, "WDM Snapshot at $%02X:%04X: %s", CPU.Registers.PB, CPU.Registers.PCw, filename);
 			S9xMessage(S9X_DEBUG, S9X_DEBUG_OUTPUT, def);
 			S9xFreezeGame(filename);
 

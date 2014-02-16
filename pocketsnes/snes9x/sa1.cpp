@@ -218,16 +218,16 @@ void S9xSA1Init (void)
 	SA1.VirtualBitmapFormat = 0;
 	SA1.variable_bit_pos = 0;
 
-	SA1Registers.PBPC = 0;
-	SA1Registers.PB = 0;
-	SA1Registers.PCw = 0;
-	SA1Registers.D.W = 0;
-	SA1Registers.DB = 0;
-	SA1Registers.SH = 1;
-	SA1Registers.SL = 0xFF;
-	SA1Registers.XH = 0;
-	SA1Registers.YH = 0;
-	SA1Registers.P.W = 0;
+	SA1.Registers.PBPC = 0;
+	SA1.Registers.PB = 0;
+	SA1.Registers.PCw = 0;
+	SA1.Registers.D.W = 0;
+	SA1.Registers.DB = 0;
+	SA1.Registers.SH = 1;
+	SA1.Registers.SL = 0xFF;
+	SA1.Registers.XH = 0;
+	SA1.Registers.YH = 0;
+	SA1.Registers.P.W = 0;
 
 	SA1.ShiftedPB = 0;
 	SA1.ShiftedDB = 0;
@@ -240,7 +240,7 @@ void S9xSA1Init (void)
 	SA1.S9xOpcodes = S9xSA1OpcodesM1X1;
 	SA1.S9xOpLengths = S9xOpLengthsM1X1;
 
-	S9xSA1SetPCBase(SA1Registers.PBPC);
+	S9xSA1SetPCBase(SA1.Registers.PBPC);
 
 	S9xSA1UnpackStatus();
 	S9xSA1FixCycles();
@@ -280,10 +280,10 @@ static void S9xSA1SetBWRAMMemMap (uint8 val)
 
 void S9xSA1PostLoadState (void)
 {
-	SA1.ShiftedPB = (uint32) SA1Registers.PB << 16;
-	SA1.ShiftedDB = (uint32) SA1Registers.DB << 16;
+	SA1.ShiftedPB = (uint32) SA1.Registers.PB << 16;
+	SA1.ShiftedDB = (uint32) SA1.Registers.DB << 16;
 
-	S9xSA1SetPCBase(SA1Registers.PBPC);
+	S9xSA1SetPCBase(SA1.Registers.PBPC);
 	S9xSA1UnpackStatus();
 	S9xSA1FixCycles();
 	SA1.VirtualBitmapFormat = (Memory.FillRAM[0x223f] & 0x80) ? 2 : 4;
@@ -395,10 +395,10 @@ void S9xSetSA1 (uint8 byte, uint32 address)
 			#ifdef DEBUGGER
 				printf("SA-1 reset\n");
 			#endif
-				SA1Registers.PBPC = 0;
-				SA1Registers.PB = 0;
-				SA1Registers.PCw = Memory.FillRAM[0x2203] | (Memory.FillRAM[0x2204] << 8);
-				S9xSA1SetPCBase(SA1Registers.PBPC);
+				SA1.Registers.PBPC = 0;
+				SA1.Registers.PB = 0;
+				SA1.Registers.PCw = Memory.FillRAM[0x2203] | (Memory.FillRAM[0x2204] << 8);
+				S9xSA1SetPCBase(SA1.Registers.PBPC);
 			}
 
 			// The port write controls the following interrupts
@@ -1028,7 +1028,7 @@ void S9xSA1SetWord (uint16 Word, uint32 address, enum s9xwrap_t w, enum s9xwrite
 
 void S9xSA1SetPCBase (uint32 address)
 {
-	SA1Registers.PBPC = address & 0xffffff;
+	SA1.Registers.PBPC = address & 0xffffff;
 	SA1.ShiftedPB = address & 0xff0000;
 
 	// FIXME

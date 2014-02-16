@@ -196,7 +196,7 @@ static void _MAIN_LOOP_NAME_ (void)
 				if (CPU.WaitingForInterrupt)
 				{
 					CPU.WaitingForInterrupt = FALSE;
-					Registers.PCw++;
+					CPU.Registers.PCw++;
 				}
 
 				S9xOpcode_NMI();
@@ -212,7 +212,7 @@ static void _MAIN_LOOP_NAME_ (void)
 				if (CPU.WaitingForInterrupt)
 				{
 					CPU.WaitingForInterrupt = FALSE;
-					Registers.PCw++;
+					CPU.Registers.PCw++;
 				}
 
 				CPU.IRQTransition = FALSE;
@@ -229,8 +229,8 @@ static void _MAIN_LOOP_NAME_ (void)
 			for (int Break = 0; Break != 6; Break++)
 			{
 				if (S9xBreakpoint[Break].Enabled &&
-					S9xBreakpoint[Break].Bank == Registers.PB &&
-					S9xBreakpoint[Break].Address == Registers.PCw)
+					S9xBreakpoint[Break].Bank == CPU.Registers.PB &&
+					S9xBreakpoint[Break].Address == CPU.Registers.PCw)
 				{
 					if (S9xBreakpoint[Break].Enabled == 2)
 						S9xBreakpoint[Break].Enabled = TRUE;
@@ -263,27 +263,27 @@ static void _MAIN_LOOP_NAME_ (void)
 
 		if (CPU.PCBase)
 		{
-			Op = CPU.PCBase[Registers.PCw];
+			Op = CPU.PCBase[CPU.Registers.PCw];
 			CPU.Cycles += CPU.MemSpeed;
 			Opcodes = ICPU.S9xOpcodes;
 		}
 		else
 		{
-			Op = S9xGetByte(Registers.PBPC);
+			Op = S9xGetByte(CPU.Registers.PBPC);
 			OpenBus = Op;
 			Opcodes = S9xOpcodesSlow;
 		}
 
-		if ((Registers.PCw & MEMMAP_MASK) + ICPU.S9xOpLengths[Op] >= MEMMAP_BLOCK_SIZE)
+		if ((CPU.Registers.PCw & MEMMAP_MASK) + ICPU.S9xOpLengths[Op] >= MEMMAP_BLOCK_SIZE)
 		{
 			uint8	*oldPCBase = CPU.PCBase;
 
-			CPU.PCBase = S9xGetBasePointer(ICPU.ShiftedPB + ((uint16) (Registers.PCw + 4)));
-			if (oldPCBase != CPU.PCBase || (Registers.PCw & ~MEMMAP_MASK) == (0xffff & ~MEMMAP_MASK))
+			CPU.PCBase = S9xGetBasePointer(ICPU.ShiftedPB + ((uint16) (CPU.Registers.PCw + 4)));
+			if (oldPCBase != CPU.PCBase || (CPU.Registers.PCw & ~MEMMAP_MASK) == (0xffff & ~MEMMAP_MASK))
 				Opcodes = S9xOpcodesSlow;
 		}
 
-		Registers.PCw++;
+		CPU.Registers.PCw++;
 		(*Opcodes[Op].S9xOpcode)();
 
 		S9xCheckInterrupts();

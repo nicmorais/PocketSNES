@@ -181,7 +181,6 @@
 
 #define CPU								SA1
 #define ICPU							SA1
-#define Registers						SA1Registers
 #define OpenBus							SA1OpenBus
 #define S9xGetByte						S9xSA1GetByte
 #define S9xGetWord						S9xSA1GetWord
@@ -247,7 +246,7 @@ void S9xSA1MainLoop (void)
 		if (SA1.WaitingForInterrupt)
 		{
 			SA1.WaitingForInterrupt = FALSE;
-			SA1Registers.PCw++;
+			SA1.Registers.PCw++;
 		}
 
 		S9xSA1Opcode_NMI();
@@ -263,7 +262,7 @@ void S9xSA1MainLoop (void)
 			if (SA1.WaitingForInterrupt)
 			{
 				SA1.WaitingForInterrupt = FALSE;
-				SA1Registers.PCw++;
+				SA1.Registers.PCw++;
 			}
 
 			S9xSA1Opcode_IRQ();
@@ -277,7 +276,7 @@ void S9xSA1MainLoop (void)
 			if (SA1.WaitingForInterrupt)
 			{
 				SA1.WaitingForInterrupt = FALSE;
-				SA1Registers.PCw++;
+				SA1.Registers.PCw++;
 			}
 
 			S9xSA1Opcode_IRQ();
@@ -291,7 +290,7 @@ void S9xSA1MainLoop (void)
 			if (SA1.WaitingForInterrupt)
 			{
 				SA1.WaitingForInterrupt = FALSE;
-				SA1Registers.PCw++;
+				SA1.Registers.PCw++;
 			}
 
 			S9xSA1Opcode_IRQ();
@@ -310,24 +309,24 @@ void S9xSA1MainLoop (void)
 
 		if (SA1.PCBase)
 		{
-			SA1OpenBus = Op = SA1.PCBase[Registers.PCw];
+			SA1OpenBus = Op = SA1.PCBase[SA1.Registers.PCw];
 			Opcodes = SA1.S9xOpcodes;
 		}
 		else
 		{
-			Op = S9xSA1GetByte(Registers.PBPC);
+			Op = S9xSA1GetByte(SA1.Registers.PBPC);
 			Opcodes = S9xOpcodesSlow;
 		}
 
-		if ((SA1Registers.PCw & MEMMAP_MASK) + SA1.S9xOpLengths[Op] >= MEMMAP_BLOCK_SIZE)
+		if ((SA1.Registers.PCw & MEMMAP_MASK) + SA1.S9xOpLengths[Op] >= MEMMAP_BLOCK_SIZE)
 		{
-			uint32	oldPC = SA1Registers.PBPC;
-			S9xSA1SetPCBase(SA1Registers.PBPC);
-			SA1Registers.PBPC = oldPC;
+			uint32	oldPC = SA1.Registers.PBPC;
+			S9xSA1SetPCBase(SA1.Registers.PBPC);
+			SA1.Registers.PBPC = oldPC;
 			Opcodes = S9xSA1OpcodesSlow;
 		}
 
-		Registers.PCw++;
+		SA1.Registers.PCw++;
 		(*Opcodes[Op].S9xOpcode)();
 	}
 

@@ -197,11 +197,11 @@ static void S9xSoftResetCPU (void);
 static void S9xResetCPU (void)
 {
 	S9xSoftResetCPU();
-	Registers.SL = 0xff;
-	Registers.P.W = 0;
-	Registers.A.W = 0;
-	Registers.X.W = 0;
-	Registers.Y.W = 0;
+	CPU.Registers.SL = 0xff;
+	CPU.Registers.P.W = 0;
+	CPU.Registers.A.W = 0;
+	CPU.Registers.X.W = 0;
+	CPU.Registers.Y.W = 0;
 	SetFlags(MemoryFlag | IndexFlag | IRQ | Emulation);
 	ClearFlags(Decimal);
 }
@@ -234,16 +234,16 @@ static void S9xSoftResetCPU (void)
 	CPU.AutoSaveTimer = 0;
 	CPU.SRAMModified = FALSE;
 
-	Registers.PBPC = 0;
-	Registers.PB = 0;
-	Registers.PCw = S9xGetWord(0xfffc);
-	OpenBus = Registers.PCh;
-	Registers.D.W = 0;
-	Registers.DB = 0;
-	Registers.SH = 1;
-	Registers.SL -= 3;
-	Registers.XH = 0;
-	Registers.YH = 0;
+	CPU.Registers.PBPC = 0;
+	CPU.Registers.PB = 0;
+	CPU.Registers.PCw = S9xGetWord(0xfffc);
+	OpenBus = CPU.Registers.PCh;
+	CPU.Registers.D.W = 0;
+	CPU.Registers.DB = 0;
+	CPU.Registers.SH = 1;
+	CPU.Registers.SL -= 3;
+	CPU.Registers.XH = 0;
+	CPU.Registers.YH = 0;
 
 	ICPU.ShiftedPB = 0;
 	ICPU.ShiftedDB = 0;
@@ -259,7 +259,7 @@ static void S9xSoftResetCPU (void)
 	else
 		Timings.WRAMRefreshPos = SNES_WRAM_REFRESH_HC_v1;
 
-	S9xSetPCBase(Registers.PBPC);
+	S9xSetPCBase(CPU.Registers.PBPC);
 
 	ICPU.S9xOpcodes = S9xOpcodesE1;
 	ICPU.S9xOpLengths = S9xOpLengthsM1X1;

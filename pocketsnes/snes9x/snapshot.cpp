@@ -1304,7 +1304,7 @@ void S9xFreezeToStream (STREAM stream)
 
 	FreezeStruct(stream, "CPU", &CPU, SnapCPU, COUNT(SnapCPU));
 
-	FreezeStruct(stream, "REG", &Registers, SnapRegisters, COUNT(SnapRegisters));
+	FreezeStruct(stream, "REG", &CPU.Registers, SnapRegisters, COUNT(SnapRegisters));
 
 	FreezeStruct(stream, "PPU", &PPU, SnapPPU, COUNT(SnapPPU));
 
@@ -1340,7 +1340,7 @@ void S9xFreezeToStream (STREAM stream)
 	{
 		S9xSA1PackStatus();
 		FreezeStruct(stream, "SA1", &SA1, SnapSA1, COUNT(SnapSA1));
-		FreezeStruct(stream, "SAR", &SA1Registers, SnapSA1Registers, COUNT(SnapSA1Registers));
+		FreezeStruct(stream, "SAR", &SA1.Registers, SnapSA1Registers, COUNT(SnapSA1Registers));
 	}
 
 	if (Settings.DSP == 1)
@@ -1634,7 +1634,7 @@ int S9xUnfreezeFromStream (STREAM stream)
 
 		UnfreezeStructFromCopy(&CPU, SnapCPU, COUNT(SnapCPU), local_cpu, version);
 
-		UnfreezeStructFromCopy(&Registers, SnapRegisters, COUNT(SnapRegisters), local_registers, version);
+		UnfreezeStructFromCopy(&CPU.Registers, SnapRegisters, COUNT(SnapRegisters), local_registers, version);
 
 		UnfreezeStructFromCopy(&PPU, SnapPPU, COUNT(SnapPPU), local_ppu, version);
 
@@ -1670,7 +1670,7 @@ int S9xUnfreezeFromStream (STREAM stream)
 			UnfreezeStructFromCopy(&SA1, SnapSA1, COUNT(SnapSA1), local_sa1, version);
 
 		if (local_sa1_registers)
-			UnfreezeStructFromCopy(&SA1Registers, SnapSA1Registers, COUNT(SnapSA1Registers), local_sa1_registers, version);
+			UnfreezeStructFromCopy(&SA1.Registers, SnapSA1Registers, COUNT(SnapSA1Registers), local_sa1_registers, version);
 
 		if (local_dsp1)
 			UnfreezeStructFromCopy(&DSP1, SnapDSP1, COUNT(SnapDSP1), local_dsp1, version);
@@ -1740,9 +1740,9 @@ int S9xUnfreezeFromStream (STREAM stream)
 		}
 
 		CPU.Flags |= old_flags & (DEBUG_MODE_FLAG | TRACE_FLAG | SINGLE_STEP_FLAG | FRAME_ADVANCE_FLAG);
-		ICPU.ShiftedPB = Registers.PB << 16;
-		ICPU.ShiftedDB = Registers.DB << 16;
-		S9xSetPCBase(Registers.PBPC);
+		ICPU.ShiftedPB = CPU.Registers.PB << 16;
+		ICPU.ShiftedDB = CPU.Registers.DB << 16;
+		S9xSetPCBase(CPU.Registers.PBPC);
 		S9xUnpackStatus();
 		S9xFixCycles();
 

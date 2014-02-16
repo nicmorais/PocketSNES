@@ -275,12 +275,12 @@ static void Op##OP (void) \
 	if (COND) \
 	{ \
 		AddCycles(ONE_CYCLE); \
-		if (E && Registers.PCh != newPC.B.h) \
+		if (E && CPU.Registers.PCh != newPC.B.h) \
 			AddCycles(ONE_CYCLE); \
-		if ((Registers.PCw & ~MEMMAP_MASK) != (newPC.W & ~MEMMAP_MASK)) \
+		if ((CPU.Registers.PCw & ~MEMMAP_MASK) != (newPC.W & ~MEMMAP_MASK)) \
 			S9xSetPCBase(ICPU.ShiftedPB + newPC.W); \
 		else \
-			Registers.PCw = newPC.W; \
+			CPU.Registers.PCw = newPC.W; \
 	} \
 }
 
@@ -301,10 +301,10 @@ static inline void ADC (uint16 Work16)
 {
 	if (CheckDecimal())
 	{
-		uint16	A1 = Registers.A.W & 0x000F;
-		uint16	A2 = Registers.A.W & 0x00F0;
-		uint16	A3 = Registers.A.W & 0x0F00;
-		uint32	A4 = Registers.A.W & 0xF000;
+		uint16	A1 = CPU.Registers.A.W & 0x000F;
+		uint16	A2 = CPU.Registers.A.W & 0x00F0;
+		uint16	A3 = CPU.Registers.A.W & 0x0F00;
+		uint32	A4 = CPU.Registers.A.W & 0xF000;
 		uint16	W1 = Work16 & 0x000F;
 		uint16	W2 = Work16 & 0x00F0;
 		uint16	W3 = Work16 & 0x0F00;
@@ -346,27 +346,27 @@ static inline void ADC (uint16 Work16)
 
 		uint16	Ans16 = A4 | A3 | A2 | A1;
 
-		if (~(Registers.A.W ^ Work16) & (Work16 ^ Ans16) & 0x8000)
+		if (~(CPU.Registers.A.W ^ Work16) & (Work16 ^ Ans16) & 0x8000)
 			SetOverflow();
 		else
 			ClearOverflow();
 
-		Registers.A.W = Ans16;
-		SetZN(Registers.A.W);
+		CPU.Registers.A.W = Ans16;
+		SetZN(CPU.Registers.A.W);
 	}
 	else
 	{
-		uint32	Ans32 = Registers.A.W + Work16 + CheckCarry();
+		uint32	Ans32 = CPU.Registers.A.W + Work16 + CheckCarry();
 
 		ICPU._Carry = Ans32 >= 0x10000;
 
-		if (~(Registers.A.W ^ Work16) & (Work16 ^ (uint16) Ans32) & 0x8000)
+		if (~(CPU.Registers.A.W ^ Work16) & (Work16 ^ (uint16) Ans32) & 0x8000)
 			SetOverflow();
 		else
 			ClearOverflow();
 
-		Registers.A.W = (uint16) Ans32;
-		SetZN(Registers.A.W);
+		CPU.Registers.A.W = (uint16) Ans32;
+		SetZN(CPU.Registers.A.W);
 	}
 }
 
@@ -374,8 +374,8 @@ static inline void ADC (uint8 Work8)
 {
 	if (CheckDecimal())
 	{
-		uint8	A1 = Registers.A.W & 0x0F;
-		uint16	A2 = Registers.A.W & 0xF0;
+		uint8	A1 = CPU.Registers.A.W & 0x0F;
+		uint16	A2 = CPU.Registers.A.W & 0xF0;
 		uint8	W1 = Work8 & 0x0F;
 		uint8	W2 = Work8 & 0xF0;
 
@@ -399,40 +399,40 @@ static inline void ADC (uint8 Work8)
 
 		uint8	Ans8 = A2 | A1;
 
-		if (~(Registers.AL ^ Work8) & (Work8 ^ Ans8) & 0x80)
+		if (~(CPU.Registers.AL ^ Work8) & (Work8 ^ Ans8) & 0x80)
 			SetOverflow();
 		else
 			ClearOverflow();
 
-		Registers.AL = Ans8;
-		SetZN(Registers.AL);
+		CPU.Registers.AL = Ans8;
+		SetZN(CPU.Registers.AL);
 	}
 	else
 	{
-		uint16	Ans16 = Registers.AL + Work8 + CheckCarry();
+		uint16	Ans16 = CPU.Registers.AL + Work8 + CheckCarry();
 
 		ICPU._Carry = Ans16 >= 0x100;
 
-		if (~(Registers.AL ^ Work8) & (Work8 ^ (uint8) Ans16) & 0x80)
+		if (~(CPU.Registers.AL ^ Work8) & (Work8 ^ (uint8) Ans16) & 0x80)
 			SetOverflow();
 		else
 			ClearOverflow();
 
-		Registers.AL = (uint8) Ans16;
-		SetZN(Registers.AL);
+		CPU.Registers.AL = (uint8) Ans16;
+		SetZN(CPU.Registers.AL);
 	}
 }
 
 static inline void AND (uint16 Work16)
 {
-	Registers.A.W &= Work16;
-	SetZN(Registers.A.W);
+	CPU.Registers.A.W &= Work16;
+	SetZN(CPU.Registers.A.W);
 }
 
 static inline void AND (uint8 Work8)
 {
-	Registers.AL &= Work8;
-	SetZN(Registers.AL);
+	CPU.Registers.AL &= Work8;
+	SetZN(CPU.Registers.AL);
 }
 
 static inline void ASL16 (uint32 OpAddress, s9xwrap_t w)
@@ -461,54 +461,54 @@ static inline void BIT (uint16 Work16)
 {
 	ICPU._Overflow = (Work16 & 0x4000) != 0;
 	ICPU._Negative = (uint8) (Work16 >> 8);
-	ICPU._Zero = (Work16 & Registers.A.W) != 0;
+	ICPU._Zero = (Work16 & CPU.Registers.A.W) != 0;
 }
 
 static inline void BIT (uint8 Work8)
 {
 	ICPU._Overflow = (Work8 & 0x40) != 0;
 	ICPU._Negative = Work8;
-	ICPU._Zero = Work8 & Registers.AL;
+	ICPU._Zero = Work8 & CPU.Registers.AL;
 }
 
 static inline void CMP (uint16 val)
 {
-	int32	Int32 = (int32) Registers.A.W - (int32) val;
+	int32	Int32 = (int32) CPU.Registers.A.W - (int32) val;
 	ICPU._Carry = Int32 >= 0;
 	SetZN((uint16) Int32);
 }
 
 static inline void CMP (uint8 val)
 {
-	int16	Int16 = (int16) Registers.AL - (int16) val;
+	int16	Int16 = (int16) CPU.Registers.AL - (int16) val;
 	ICPU._Carry = Int16 >= 0;
 	SetZN((uint8) Int16);
 }
 
 static inline void CPX (uint16 val)
 {
-	int32	Int32 = (int32) Registers.X.W - (int32) val;
+	int32	Int32 = (int32) CPU.Registers.X.W - (int32) val;
 	ICPU._Carry = Int32 >= 0;
 	SetZN((uint16) Int32);
 }
 
 static inline void CPX (uint8 val)
 {
-	int16	Int16 = (int16) Registers.XL - (int16) val;
+	int16	Int16 = (int16) CPU.Registers.XL - (int16) val;
 	ICPU._Carry = Int16 >= 0;
 	SetZN((uint8) Int16);
 }
 
 static inline void CPY (uint16 val)
 {
-	int32	Int32 = (int32) Registers.Y.W - (int32) val;
+	int32	Int32 = (int32) CPU.Registers.Y.W - (int32) val;
 	ICPU._Carry = Int32 >= 0;
 	SetZN((uint16) Int32);
 }
 
 static inline void CPY (uint8 val)
 {
-	int16	Int16 = (int16) Registers.YL - (int16) val;
+	int16	Int16 = (int16) CPU.Registers.YL - (int16) val;
 	ICPU._Carry = Int16 >= 0;
 	SetZN((uint8) Int16);
 }
@@ -533,14 +533,14 @@ static inline void DEC8 (uint32 OpAddress)
 
 static inline void EOR (uint16 val)
 {
-	Registers.A.W ^= val;
-	SetZN(Registers.A.W);
+	CPU.Registers.A.W ^= val;
+	SetZN(CPU.Registers.A.W);
 }
 
 static inline void EOR (uint8 val)
 {
-	Registers.AL ^= val;
-	SetZN(Registers.AL);
+	CPU.Registers.AL ^= val;
+	SetZN(CPU.Registers.AL);
 }
 
 static inline void INC16 (uint32 OpAddress, s9xwrap_t w)
@@ -563,38 +563,38 @@ static inline void INC8 (uint32 OpAddress)
 
 static inline void LDA (uint16 val)
 {
-	Registers.A.W = val;
-	SetZN(Registers.A.W);
+	CPU.Registers.A.W = val;
+	SetZN(CPU.Registers.A.W);
 }
 
 static inline void LDA (uint8 val)
 {
-	Registers.AL = val;
-	SetZN(Registers.AL);
+	CPU.Registers.AL = val;
+	SetZN(CPU.Registers.AL);
 }
 
 static inline void LDX (uint16 val)
 {
-	Registers.X.W = val;
-	SetZN(Registers.X.W);
+	CPU.Registers.X.W = val;
+	SetZN(CPU.Registers.X.W);
 }
 
 static inline void LDX (uint8 val)
 {
-	Registers.XL = val;
-	SetZN(Registers.XL);
+	CPU.Registers.XL = val;
+	SetZN(CPU.Registers.XL);
 }
 
 static inline void LDY (uint16 val)
 {
-	Registers.Y.W = val;
-	SetZN(Registers.Y.W);
+	CPU.Registers.Y.W = val;
+	SetZN(CPU.Registers.Y.W);
 }
 
 static inline void LDY (uint8 val)
 {
-	Registers.YL = val;
-	SetZN(Registers.YL);
+	CPU.Registers.YL = val;
+	SetZN(CPU.Registers.YL);
 }
 
 static inline void LSR16 (uint32 OpAddress, s9xwrap_t w)
@@ -621,14 +621,14 @@ static inline void LSR8 (uint32 OpAddress)
 
 static inline void ORA (uint16 val)
 {
-	Registers.A.W |= val;
-	SetZN(Registers.A.W);
+	CPU.Registers.A.W |= val;
+	SetZN(CPU.Registers.A.W);
 }
 
 static inline void ORA (uint8 val)
 {
-	Registers.AL |= val;
-	SetZN(Registers.AL);
+	CPU.Registers.AL |= val;
+	SetZN(CPU.Registers.AL);
 }
 
 static inline void ROL16 (uint32 OpAddress, s9xwrap_t w)
@@ -677,10 +677,10 @@ static inline void SBC (uint16 Work16)
 {
 	if (CheckDecimal())
 	{
-		uint16	A1 = Registers.A.W & 0x000F;
-		uint16	A2 = Registers.A.W & 0x00F0;
-		uint16	A3 = Registers.A.W & 0x0F00;
-		uint32	A4 = Registers.A.W & 0xF000;
+		uint16	A1 = CPU.Registers.A.W & 0x000F;
+		uint16	A2 = CPU.Registers.A.W & 0x00F0;
+		uint16	A3 = CPU.Registers.A.W & 0x0F00;
+		uint32	A4 = CPU.Registers.A.W & 0xF000;
 		uint16	W1 = Work16 & 0x000F;
 		uint16	W2 = Work16 & 0x00F0;
 		uint16	W3 = Work16 & 0x0F00;
@@ -723,27 +723,27 @@ static inline void SBC (uint16 Work16)
 
 		uint16	Ans16 = A4 | A3 | A2 | A1;
 
-		if ((Registers.A.W ^ Work16) & (Registers.A.W ^ Ans16) & 0x8000)
+		if ((CPU.Registers.A.W ^ Work16) & (CPU.Registers.A.W ^ Ans16) & 0x8000)
 			SetOverflow();
 		else
 			ClearOverflow();
 
-		Registers.A.W = Ans16;
-		SetZN(Registers.A.W);
+		CPU.Registers.A.W = Ans16;
+		SetZN(CPU.Registers.A.W);
 	}
 	else
 	{
-		int32	Int32 = (int32) Registers.A.W - (int32) Work16 + (int32) CheckCarry() - 1;
+		int32	Int32 = (int32) CPU.Registers.A.W - (int32) Work16 + (int32) CheckCarry() - 1;
 
 		ICPU._Carry = Int32 >= 0;
 
-		if ((Registers.A.W ^ Work16) & (Registers.A.W ^ (uint16) Int32) & 0x8000)
+		if ((CPU.Registers.A.W ^ Work16) & (CPU.Registers.A.W ^ (uint16) Int32) & 0x8000)
 			SetOverflow();
 		else
 			ClearOverflow();
 
-		Registers.A.W = (uint16) Int32;
-		SetZN(Registers.A.W);
+		CPU.Registers.A.W = (uint16) Int32;
+		SetZN(CPU.Registers.A.W);
 	}
 }
 
@@ -751,8 +751,8 @@ static inline void SBC (uint8 Work8)
 {
 	if (CheckDecimal())
 	{
-		uint8	A1 = Registers.A.W & 0x0F;
-		uint16	A2 = Registers.A.W & 0xF0;
+		uint8	A1 = CPU.Registers.A.W & 0x0F;
+		uint16	A2 = CPU.Registers.A.W & 0xF0;
 		uint8	W1 = Work8 & 0x0F;
 		uint8	W2 = Work8 & 0xF0;
 
@@ -777,64 +777,64 @@ static inline void SBC (uint8 Work8)
 
 		uint8	Ans8 = A2 | A1;
 
-		if ((Registers.AL ^ Work8) & (Registers.AL ^ Ans8) & 0x80)
+		if ((CPU.Registers.AL ^ Work8) & (CPU.Registers.AL ^ Ans8) & 0x80)
 			SetOverflow();
 		else
 			ClearOverflow();
 
-		Registers.AL = Ans8;
-		SetZN(Registers.AL);
+		CPU.Registers.AL = Ans8;
+		SetZN(CPU.Registers.AL);
 	}
 	else
 	{
-		int16	Int16 = (int16) Registers.AL - (int16) Work8 + (int16) CheckCarry() - 1;
+		int16	Int16 = (int16) CPU.Registers.AL - (int16) Work8 + (int16) CheckCarry() - 1;
 
 		ICPU._Carry = Int16 >= 0;
 
-		if ((Registers.AL ^ Work8) & (Registers.AL ^ (uint8) Int16) & 0x80)
+		if ((CPU.Registers.AL ^ Work8) & (CPU.Registers.AL ^ (uint8) Int16) & 0x80)
 			SetOverflow();
 		else
 			ClearOverflow();
 
-		Registers.AL = (uint8) Int16;
-		SetZN(Registers.AL);
+		CPU.Registers.AL = (uint8) Int16;
+		SetZN(CPU.Registers.AL);
 	}
 }
 
 static inline void STA16 (uint32 OpAddress, enum s9xwrap_t w)
 {
-	S9xSetWord(Registers.A.W, OpAddress, w);
-	OpenBus = Registers.AH;
+	S9xSetWord(CPU.Registers.A.W, OpAddress, w);
+	OpenBus = CPU.Registers.AH;
 }
 
 static inline void STA8 (uint32 OpAddress)
 {
-	S9xSetByte(Registers.AL, OpAddress);
-	OpenBus = Registers.AL;
+	S9xSetByte(CPU.Registers.AL, OpAddress);
+	OpenBus = CPU.Registers.AL;
 }
 
 static inline void STX16 (uint32 OpAddress, enum s9xwrap_t w)
 {
-	S9xSetWord(Registers.X.W, OpAddress, w);
-	OpenBus = Registers.XH;
+	S9xSetWord(CPU.Registers.X.W, OpAddress, w);
+	OpenBus = CPU.Registers.XH;
 }
 
 static inline void STX8 (uint32 OpAddress)
 {
-	S9xSetByte(Registers.XL, OpAddress);
-	OpenBus = Registers.XL;
+	S9xSetByte(CPU.Registers.XL, OpAddress);
+	OpenBus = CPU.Registers.XL;
 }
 
 static inline void STY16 (uint32 OpAddress, enum s9xwrap_t w)
 {
-	S9xSetWord(Registers.Y.W, OpAddress, w);
-	OpenBus = Registers.YH;
+	S9xSetWord(CPU.Registers.Y.W, OpAddress, w);
+	OpenBus = CPU.Registers.YH;
 }
 
 static inline void STY8 (uint32 OpAddress)
 {
-	S9xSetByte(Registers.YL, OpAddress);
-	OpenBus = Registers.YL;
+	S9xSetByte(CPU.Registers.YL, OpAddress);
+	OpenBus = CPU.Registers.YL;
 }
 
 static inline void STZ16 (uint32 OpAddress, enum s9xwrap_t w)
@@ -852,8 +852,8 @@ static inline void STZ8 (uint32 OpAddress)
 static inline void TSB16 (uint32 OpAddress, enum s9xwrap_t w)
 {
 	uint16	Work16 = S9xGetWord(OpAddress, w);
-	ICPU._Zero = (Work16 & Registers.A.W) != 0;
-	Work16 |= Registers.A.W;
+	ICPU._Zero = (Work16 & CPU.Registers.A.W) != 0;
+	Work16 |= CPU.Registers.A.W;
 	AddCycles(ONE_CYCLE);
 	S9xSetWord(Work16, OpAddress, w, WRITE_10);
 	OpenBus = Work16 & 0xff;
@@ -862,8 +862,8 @@ static inline void TSB16 (uint32 OpAddress, enum s9xwrap_t w)
 static inline void TSB8 (uint32 OpAddress)
 {
 	uint8	Work8 = S9xGetByte(OpAddress);
-	ICPU._Zero = Work8 & Registers.AL;
-	Work8 |= Registers.AL;
+	ICPU._Zero = Work8 & CPU.Registers.AL;
+	Work8 |= CPU.Registers.AL;
 	AddCycles(ONE_CYCLE);
 	S9xSetByte(Work8, OpAddress);
 	OpenBus = Work8;
@@ -872,8 +872,8 @@ static inline void TSB8 (uint32 OpAddress)
 static inline void TRB16 (uint32 OpAddress, enum s9xwrap_t w)
 {
 	uint16	Work16 = S9xGetWord(OpAddress, w);
-	ICPU._Zero = (Work16 & Registers.A.W) != 0;
-	Work16 &= ~Registers.A.W;
+	ICPU._Zero = (Work16 & CPU.Registers.A.W) != 0;
+	Work16 &= ~CPU.Registers.A.W;
 	AddCycles(ONE_CYCLE);
 	S9xSetWord(Work16, OpAddress, w, WRITE_10);
 	OpenBus = Work16 & 0xff;
@@ -882,8 +882,8 @@ static inline void TRB16 (uint32 OpAddress, enum s9xwrap_t w)
 static inline void TRB8 (uint32 OpAddress)
 {
 	uint8	Work8 = S9xGetByte(OpAddress);
-	ICPU._Zero = Work8 & Registers.AL;
-	Work8 &= ~Registers.AL;
+	ICPU._Zero = Work8 & CPU.Registers.AL;
+	Work8 &= ~CPU.Registers.AL;
 	AddCycles(ONE_CYCLE);
 	S9xSetByte(Work8, OpAddress);
 	OpenBus = Work8;

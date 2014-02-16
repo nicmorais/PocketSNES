@@ -223,16 +223,16 @@ void S9xDoHEventProcessing (void);
 
 static inline void S9xUnpackStatus (void)
 {
-	ICPU._Zero = (Registers.PL & Zero) == 0;
-	ICPU._Negative = (Registers.PL & Negative);
-	ICPU._Carry = (Registers.PL & Carry);
-	ICPU._Overflow = (Registers.PL & Overflow) >> 6;
+	ICPU._Zero = (CPU.Registers.PL & Zero) == 0;
+	ICPU._Negative = (CPU.Registers.PL & Negative);
+	ICPU._Carry = (CPU.Registers.PL & Carry);
+	ICPU._Overflow = (CPU.Registers.PL & Overflow) >> 6;
 }
 
 static inline void S9xPackStatus (void)
 {
-	Registers.PL &= ~(Zero | Negative | Carry | Overflow);
-	Registers.PL |= ICPU._Carry | ((ICPU._Zero == 0) << 1) | (ICPU._Negative & 0x80) | (ICPU._Overflow << 6);
+	CPU.Registers.PL &= ~(Zero | Negative | Carry | Overflow);
+	CPU.Registers.PL |= ICPU._Carry | ((ICPU._Zero == 0) << 1) | (ICPU._Negative & 0x80) | (ICPU._Overflow << 6);
 }
 
 static inline void S9xFixCycles (void)

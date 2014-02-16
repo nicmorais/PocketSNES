@@ -767,7 +767,7 @@ inline void S9xSetWord (uint16 Word, uint32 Address, enum s9xwrap_t w = WRAP_NON
 
 inline void S9xSetPCBase (uint32 Address)
 {
-	Registers.PBPC = Address & 0xffffff;
+	CPU.Registers.PBPC = Address & 0xffffff;
 	ICPU.ShiftedPB = Address & 0xff0000;
 
 	int		block;

@@ -284,6 +284,8 @@
 
 struct SCPUState
 {
+	struct SRegisters	Registers;
+
 	uint32	Flags;
 	int32	Cycles;
 	int32	PrevCycles;

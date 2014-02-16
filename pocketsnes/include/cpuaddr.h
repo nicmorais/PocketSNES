@@ -191,42 +191,42 @@ typedef enum
 
 static inline uint8 Immediate8Slow (AccessMode a)
 {
-	uint8	val = S9xGetByte(Registers.PBPC);
+	uint8	val = S9xGetByte(CPU.Registers.PBPC);
 	if (a & READ)
 		OpenBus = val;
-	Registers.PCw++;
+	CPU.Registers.PCw++;
 
 	return (val);
 }
 
 static inline uint8 Immediate8 (AccessMode a)
 {
-	uint8	val = CPU.PCBase[Registers.PCw];
+	uint8	val = CPU.PCBase[CPU.Registers.PCw];
 	if (a & READ)
 		OpenBus = val;
 	AddCycles(CPU.MemSpeed);
-	Registers.PCw++;
+	CPU.Registers.PCw++;
 
 	return (val);
 }
 
 static inline uint16 Immediate16Slow (AccessMode a)
 {
-	uint16	val = S9xGetWord(Registers.PBPC, WRAP_BANK);
+	uint16	val = S9xGetWord(CPU.Registers.PBPC, WRAP_BANK);
 	if (a & READ)
 		OpenBus = (uint8) (val >> 8);
-	Registers.PCw += 2;
+	CPU.Registers.PCw += 2;
 
 	return (val);
 }
 
 static inline uint16 Immediate16 (AccessMode a)
 {
-	uint16	val = READ_WORD(CPU.PCBase + Registers.PCw);
+	uint16	val = READ_WORD(CPU.PCBase + CPU.Registers.PCw);
 	if (a & READ)
 		OpenBus = (uint8) (val >> 8);
 	AddCycles(CPU.MemSpeedx2);
-	Registers.PCw += 2;
+	CPU.Registers.PCw += 2;
 
 	return (val);
 }
@@ -235,28 +235,28 @@ static inline uint32 RelativeSlow (AccessMode a)						// branch $xx
 {
 	int8	offset = Immediate8Slow(a);
 
-	return ((int16) Registers.PCw + offset) & 0xffff;
+	return ((int16) CPU.Registers.PCw + offset) & 0xffff;
 }
 
 static inline uint32 Relative (AccessMode a)							// branch $xx
 {
 	int8	offset = Immediate8(a);
 
-	return ((int16) Registers.PCw + offset) & 0xffff;
+	return ((int16) CPU.Registers.PCw + offset) & 0xffff;
 }
 
 static inline uint32 RelativeLongSlow (AccessMode a)					// BRL $xxxx
 {
 	int16	offset = Immediate16Slow(a);
 
-	return ((int32) Registers.PCw + offset) & 0xffff;
+	return ((int32) CPU.Registers.PCw + offset) & 0xffff;
 }
 
 static inline uint32 RelativeLong (AccessMode a)						// BRL $xxxx
 {
 	int16	offset = Immediate16(a);
 
-	return ((int32) Registers.PCw + offset) & 0xffff;
+	return ((int32) CPU.Registers.PCw + offset) & 0xffff;
 }
 
 static inline uint32 AbsoluteIndexedIndirectSlow (AccessMode a)			// (a,X)
@@ -269,14 +269,14 @@ static inline uint32 AbsoluteIndexedIndirectSlow (AccessMode a)			// (a,X)
 		// OpenBus needs to be set to account for this.
 		addr = Immediate8Slow(READ);
 		if (a == JSR)
-			OpenBus = Registers.PCl;
+			OpenBus = CPU.Registers.PCl;
 		addr |= Immediate8Slow(READ) << 8;
 	}
 	else
 		addr = Immediate16Slow(READ);
 
 	AddCycles(ONE_CYCLE);
-	addr += Registers.X.W;
+	addr += CPU.Registers.X.W;
 
 	// Address load wraps within the bank
 	uint16	addr2 = S9xGetWord(ICPU.ShiftedPB | addr, WRAP_BANK);
@@ -288,7 +288,7 @@ static inline uint32 AbsoluteIndexedIndirectSlow (AccessMode a)			// (a,X)
 static inline uint32 AbsoluteIndexedIndirect (AccessMode a)				// (a,X)
 {
 	uint16	addr = Immediate16Slow(READ);
-	addr += Registers.X.W;
+	addr += CPU.Registers.X.W;
 
 	// Address load wraps within the bank
 	uint16	addr2 = S9xGetWord(ICPU.ShiftedPB | addr, WRAP_BANK);
@@ -356,7 +356,7 @@ static inline uint32 AbsoluteLongSlow (AccessMode a)					// l
 	// JSR l pushes the old bank in the middle of loading the new.
 	// OpenBus needs to be set to account for this.
 	if (a == JSR)
-		OpenBus = Registers.PB;
+		OpenBus = CPU.Registers.PB;
 
 	addr |= Immediate8Slow(a) << 16;
 
@@ -365,19 +365,19 @@ static inline uint32 AbsoluteLongSlow (AccessMode a)					// l
 
 static inline uint32 AbsoluteLong (AccessMode a)						// l
 {
-	uint32	addr = READ_3WORD(CPU.PCBase + Registers.PCw);
+	uint32	addr = READ_3WORD(CPU.PCBase + CPU.Registers.PCw);
 	AddCycles(CPU.MemSpeedx2 + CPU.MemSpeed);
 	if (a & READ)
 		OpenBus = addr >> 16;
-	Registers.PCw += 3;
+	CPU.Registers.PCw += 3;
 
 	return (addr);
 }
 
 static inline uint32 DirectSlow (AccessMode a)							// d
 {
-	uint16	addr = Immediate8Slow(a) + Registers.D.W;
-	if (Registers.DL != 0)
+	uint16	addr = Immediate8Slow(a) + CPU.Registers.D.W;
+	if (CPU.Registers.DL != 0)
 		AddCycles(ONE_CYCLE);
 
 	return (addr);
@@ -385,8 +385,8 @@ static inline uint32 DirectSlow (AccessMode a)							// d
 
 static inline uint32 Direct (AccessMode a)								// d
 {
-	uint16	addr = Immediate8(a) + Registers.D.W;
-	if (Registers.DL != 0)
+	uint16	addr = Immediate8(a) + CPU.Registers.D.W;
+	if (CPU.Registers.DL != 0)
 		AddCycles(ONE_CYCLE);
 
 	return (addr);
@@ -394,7 +394,7 @@ static inline uint32 Direct (AccessMode a)								// d
 
 static inline uint32 DirectIndirectSlow (AccessMode a)					// (d)
 {
-	uint32	addr = S9xGetWord(DirectSlow(READ), (!CheckEmulation() || Registers.DL) ? WRAP_BANK : WRAP_PAGE);
+	uint32	addr = S9xGetWord(DirectSlow(READ), (!CheckEmulation() || CPU.Registers.DL) ? WRAP_BANK : WRAP_PAGE);
 	if (a & READ)
 		OpenBus = (uint8) (addr >> 8);
 	addr |= ICPU.ShiftedDB;
@@ -414,7 +414,7 @@ static inline uint32 DirectIndirectE0 (AccessMode a)					// (d)
 
 static inline uint32 DirectIndirectE1 (AccessMode a)					// (d)
 {
-	uint32	addr = S9xGetWord(DirectSlow(READ), Registers.DL ? WRAP_BANK : WRAP_PAGE);
+	uint32	addr = S9xGetWord(DirectSlow(READ), CPU.Registers.DL ? WRAP_BANK : WRAP_PAGE);
 	if (a & READ)
 		OpenBus = (uint8) (addr >> 8);
 	addr |= ICPU.ShiftedDB;
@@ -425,10 +425,10 @@ static inline uint32 DirectIndirectE1 (AccessMode a)					// (d)
 static inline uint32 DirectIndirectIndexedSlow (AccessMode a)			// (d),Y
 {
 	uint32	addr = DirectIndirectSlow(a);
-	if (a & WRITE || !CheckIndex() || (addr & 0xff) + Registers.YL >= 0x100)
+	if (a & WRITE || !CheckIndex() || (addr & 0xff) + CPU.Registers.YL >= 0x100)
 		AddCycles(ONE_CYCLE);
 
-	return (addr + Registers.Y.W);
+	return (addr + CPU.Registers.Y.W);
 }
 
 static inline uint32 DirectIndirectIndexedE0X0 (AccessMode a)			// (d),Y
@@ -436,25 +436,25 @@ static inline uint32 DirectIndirectIndexedE0X0 (AccessMode a)			// (d),Y
 	uint32	addr = DirectIndirectE0(a);
 	AddCycles(ONE_CYCLE);
 
-	return (addr + Registers.Y.W);
+	return (addr + CPU.Registers.Y.W);
 }
 
 static inline uint32 DirectIndirectIndexedE0X1 (AccessMode a)			// (d),Y
 {
 	uint32	addr = DirectIndirectE0(a);
-	if (a & WRITE || (addr & 0xff) + Registers.YL >= 0x100)
+	if (a & WRITE || (addr & 0xff) + CPU.Registers.YL >= 0x100)
 		AddCycles(ONE_CYCLE);
 
-	return (addr + Registers.Y.W);
+	return (addr + CPU.Registers.Y.W);
 }
 
 static inline uint32 DirectIndirectIndexedE1 (AccessMode a)				// (d),Y
 {
 	uint32	addr = DirectIndirectE1(a);
-	if (a & WRITE || (addr & 0xff) + Registers.YL >= 0x100)
+	if (a & WRITE || (addr & 0xff) + CPU.Registers.YL >= 0x100)
 		AddCycles(ONE_CYCLE);
 
-	return (addr + Registers.Y.W);
+	return (addr + CPU.Registers.Y.W);
 }
 
 static inline uint32 DirectIndirectLongSlow (AccessMode a)				// [d]
@@ -479,22 +479,22 @@ static inline uint32 DirectIndirectLong (AccessMode a)					// [d]
 
 static inline uint32 DirectIndirectIndexedLongSlow (AccessMode a)		// [d],Y
 {
-	return (DirectIndirectLongSlow(a) + Registers.Y.W);
+	return (DirectIndirectLongSlow(a) + CPU.Registers.Y.W);
 }
 
 static inline uint32 DirectIndirectIndexedLong (AccessMode a)			// [d],Y
 {
-	return (DirectIndirectLong(a) + Registers.Y.W);
+	return (DirectIndirectLong(a) + CPU.Registers.Y.W);
 }
 
 static inline uint32 DirectIndexedXSlow (AccessMode a)					// d,X
 {
 	pair	addr;
 	addr.W = DirectSlow(a);
-	if (!CheckEmulation() || Registers.DL)
-		addr.W += Registers.X.W;
+	if (!CheckEmulation() || CPU.Registers.DL)
+		addr.W += CPU.Registers.X.W;
 	else
-		addr.B.l += Registers.XL;
+		addr.B.l += CPU.Registers.XL;
 
 	AddCycles(ONE_CYCLE);
 
@@ -503,7 +503,7 @@ static inline uint32 DirectIndexedXSlow (AccessMode a)					// d,X
 
 static inline uint32 DirectIndexedXE0 (AccessMode a)					// d,X
 {
-	uint16	addr = Direct(a) + Registers.X.W;
+	uint16	addr = Direct(a) + CPU.Registers.X.W;
 	AddCycles(ONE_CYCLE);
 
 	return (addr);
@@ -511,13 +511,13 @@ static inline uint32 DirectIndexedXE0 (AccessMode a)					// d,X
 
 static inline uint32 DirectIndexedXE1 (AccessMode a)					// d,X
 {
-	if (Registers.DL)
+	if (CPU.Registers.DL)
 		return (DirectIndexedXE0(a));
 	else
 	{
 		pair	addr;
 		addr.W = Direct(a);
-		addr.B.l += Registers.XL;
+		addr.B.l += CPU.Registers.XL;
 		AddCycles(ONE_CYCLE);
 
 		return (addr.W);
@@ -528,10 +528,10 @@ static inline uint32 DirectIndexedYSlow (AccessMode a)					// d,Y
 {
 	pair	addr;
 	addr.W = DirectSlow(a);
-	if (!CheckEmulation() || Registers.DL)
-		addr.W += Registers.Y.W;
+	if (!CheckEmulation() || CPU.Registers.DL)
+		addr.W += CPU.Registers.Y.W;
 	else
-		addr.B.l += Registers.YL;
+		addr.B.l += CPU.Registers.YL;
 
 	AddCycles(ONE_CYCLE);
 
@@ -540,7 +540,7 @@ static inline uint32 DirectIndexedYSlow (AccessMode a)					// d,Y
 
 static inline uint32 DirectIndexedYE0 (AccessMode a)					// d,Y
 {
-	uint16	addr = Direct(a) + Registers.Y.W;
+	uint16	addr = Direct(a) + CPU.Registers.Y.W;
 	AddCycles(ONE_CYCLE);
 
 	return (addr);
@@ -548,13 +548,13 @@ static inline uint32 DirectIndexedYE0 (AccessMode a)					// d,Y
 
 static inline uint32 DirectIndexedYE1 (AccessMode a)					// d,Y
 {
-	if (Registers.DL)
+	if (CPU.Registers.DL)
 		return (DirectIndexedYE0(a));
 	else
 	{
 		pair	addr;
 		addr.W = Direct(a);
-		addr.B.l += Registers.YL;
+		addr.B.l += CPU.Registers.YL;
 		AddCycles(ONE_CYCLE);
 
 		return (addr.W);
@@ -563,7 +563,7 @@ static inline uint32 DirectIndexedYE1 (AccessMode a)					// d,Y
 
 static inline uint32 DirectIndexedIndirectSlow (AccessMode a)			// (d,X)
 {
-	uint32	addr = S9xGetWord(DirectIndexedXSlow(READ), (!CheckEmulation() || Registers.DL) ? WRAP_BANK : WRAP_PAGE);
+	uint32	addr = S9xGetWord(DirectIndexedXSlow(READ), (!CheckEmulation() || CPU.Registers.DL) ? WRAP_BANK : WRAP_PAGE);
 	if (a & READ)
 		OpenBus = (uint8) (addr >> 8);
 
@@ -581,7 +581,7 @@ static inline uint32 DirectIndexedIndirectE0 (AccessMode a)				// (d,X)
 
 static inline uint32 DirectIndexedIndirectE1 (AccessMode a)				// (d,X)
 {
-	uint32	addr = S9xGetWord(DirectIndexedXE1(READ), Registers.DL ? WRAP_BANK : WRAP_PAGE);
+	uint32	addr = S9xGetWord(DirectIndexedXE1(READ), CPU.Registers.DL ? WRAP_BANK : WRAP_PAGE);
 	if (a & READ)
 		OpenBus = (uint8) (addr >> 8);
 
@@ -591,10 +591,10 @@ static inline uint32 DirectIndexedIndirectE1 (AccessMode a)				// (d,X)
 static inline uint32 AbsoluteIndexedXSlow (AccessMode a)				// a,X
 {
 	uint32	addr = AbsoluteSlow(a);
-	if (a & WRITE || !CheckIndex() || (addr & 0xff) + Registers.XL >= 0x100)
+	if (a & WRITE || !CheckIndex() || (addr & 0xff) + CPU.Registers.XL >= 0x100)
 		AddCycles(ONE_CYCLE);
 
-	return (addr + Registers.X.W);
+	return (addr + CPU.Registers.X.W);
 }
 
 static inline uint32 AbsoluteIndexedXX0 (AccessMode a)					// a,X
@@ -602,25 +602,25 @@ static inline uint32 AbsoluteIndexedXX0 (AccessMode a)					// a,X
 	uint32	addr = Absolute(a);
 	AddCycles(ONE_CYCLE);
 
-	return (addr + Registers.X.W);
+	return (addr + CPU.Registers.X.W);
 }
 
 static inline uint32 AbsoluteIndexedXX1 (AccessMode a)					// a,X
 {
 	uint32	addr = Absolute(a);
-	if (a & WRITE || (addr & 0xff) + Registers.XL >= 0x100)
+	if (a & WRITE || (addr & 0xff) + CPU.Registers.XL >= 0x100)
 		AddCycles(ONE_CYCLE);
 
-	return (addr + Registers.X.W);
+	return (addr + CPU.Registers.X.W);
 }
 
 static inline uint32 AbsoluteIndexedYSlow (AccessMode a)				// a,Y
 {
 	uint32	addr = AbsoluteSlow(a);
-	if (a & WRITE || !CheckIndex() || (addr & 0xff) + Registers.YL >= 0x100)
+	if (a & WRITE || !CheckIndex() || (addr & 0xff) + CPU.Registers.YL >= 0x100)
 		AddCycles(ONE_CYCLE);
 
-	return (addr + Registers.Y.W);
+	return (addr + CPU.Registers.Y.W);
 }
 
 static inline uint32 AbsoluteIndexedYX0 (AccessMode a)					// a,Y
@@ -628,31 +628,31 @@ static inline uint32 AbsoluteIndexedYX0 (AccessMode a)					// a,Y
 	uint32	addr = Absolute(a);
 	AddCycles(ONE_CYCLE);
 
-	return (addr + Registers.Y.W);
+	return (addr + CPU.Registers.Y.W);
 }
 
 static inline uint32 AbsoluteIndexedYX1 (AccessMode a)					// a,Y
 {
 	uint32	addr = Absolute(a);
-	if (a & WRITE || (addr & 0xff) + Registers.YL >= 0x100)
+	if (a & WRITE || (addr & 0xff) + CPU.Registers.YL >= 0x100)
 		AddCycles(ONE_CYCLE);
 
-	return (addr + Registers.Y.W);
+	return (addr + CPU.Registers.Y.W);
 }
 
 static inline uint32 AbsoluteLongIndexedXSlow (AccessMode a)			// l,X
 {
-	return (AbsoluteLongSlow(a) + Registers.X.W);
+	return (AbsoluteLongSlow(a) + CPU.Registers.X.W);
 }
 
 static inline uint32 AbsoluteLongIndexedX (AccessMode a)				// l,X
 {
-	return (AbsoluteLong(a) + Registers.X.W);
+	return (AbsoluteLong(a) + CPU.Registers.X.W);
 }
 
 static inline uint32 StackRelativeSlow (AccessMode a)					// d,S
 {
-	uint16	addr = Immediate8Slow(a) + Registers.S.W;
+	uint16	addr = Immediate8Slow(a) + CPU.Registers.S.W;
 	AddCycles(ONE_CYCLE);
 
 	return (addr);
@@ -660,7 +660,7 @@ static inline uint32 StackRelativeSlow (AccessMode a)					// d,S
 
 static inline uint32 StackRelative (AccessMode a)						// d,S
 {
-	uint16	addr = Immediate8(a) + Registers.S.W;
+	uint16	addr = Immediate8(a) + CPU.Registers.S.W;
 	AddCycles(ONE_CYCLE);
 
 	return (addr);
@@ -671,7 +671,7 @@ static inline uint32 StackRelativeIndirectIndexedSlow (AccessMode a)	// (d,S),Y
 	uint32	addr = S9xGetWord(StackRelativeSlow(READ));
 	if (a & READ)
 		OpenBus = (uint8) (addr >> 8);
-	addr = (addr + Registers.Y.W + ICPU.ShiftedDB) & 0xffffff;
+	addr = (addr + CPU.Registers.Y.W + ICPU.ShiftedDB) & 0xffffff;
 	AddCycles(ONE_CYCLE);
 
 	return (addr);
@@ -682,7 +682,7 @@ static inline uint32 StackRelativeIndirectIndexed (AccessMode a)		// (d,S),Y
 	uint32	addr = S9xGetWord(StackRelative(READ));
 	if (a & READ)
 		OpenBus = (uint8) (addr >> 8);
-	addr = (addr + Registers.Y.W + ICPU.ShiftedDB) & 0xffffff;
+	addr = (addr + CPU.Registers.Y.W + ICPU.ShiftedDB) & 0xffffff;
 	AddCycles(ONE_CYCLE);
 
 	return (addr);
