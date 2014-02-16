@@ -222,17 +222,17 @@ struct SSA1
 
 #define SA1CheckCarry()		(SA1._Carry)
 #define SA1CheckZero()		(SA1._Zero == 0)
-#define SA1CheckIRQ()		(SA1.Registers.PL & IRQ)
-#define SA1CheckDecimal()	(SA1.Registers.PL & Decimal)
-#define SA1CheckIndex()		(SA1.Registers.PL & IndexFlag)
-#define SA1CheckMemory()	(SA1.Registers.PL & MemoryFlag)
+#define SA1CheckIRQ()		(SA1.Registers.P.W & IRQ)
+#define SA1CheckDecimal()	(SA1.Registers.P.W & Decimal)
+#define SA1CheckIndex()		(SA1.Registers.P.W & IndexFlag)
+#define SA1CheckMemory()	(SA1.Registers.P.W & MemoryFlag)
 #define SA1CheckOverflow()	(SA1._Overflow)
 #define SA1CheckNegative()	(SA1._Negative & 0x80)
 #define SA1CheckEmulation()	(SA1.Registers.P.W & Emulation)
 
 #define SA1SetFlags(f)		(SA1.Registers.P.W |= (f))
 #define SA1ClearFlags(f)	(SA1.Registers.P.W &= ~(f))
-#define SA1CheckFlag(f)		(SA1.Registers.PL & (f))
+#define SA1CheckFlag(f)		(SA1.Registers.P.W & (f))
 
 extern struct SSA1			SA1;
 extern uint8				SA1OpenBus;
@@ -258,16 +258,16 @@ void S9xSA1PostLoadState (void);
 
 static inline void S9xSA1UnpackStatus (void)
 {
-	SA1._Zero = (SA1.Registers.PL & Zero) == 0;
-	SA1._Negative = (SA1.Registers.PL & Negative);
-	SA1._Carry = (SA1.Registers.PL & Carry);
-	SA1._Overflow = (SA1.Registers.PL & Overflow) >> 6;
+	SA1._Zero = (SA1.Registers.P.W & Zero) == 0;
+	SA1._Negative = (SA1.Registers.P.W & Negative);
+	SA1._Carry = (SA1.Registers.P.W & Carry);
+	SA1._Overflow = (SA1.Registers.P.W & Overflow) >> 6;
 }
 
 static inline void S9xSA1PackStatus (void)
 {
-	SA1.Registers.PL &= ~(Zero | Negative | Carry | Overflow);
-	SA1.Registers.PL |= SA1._Carry | ((SA1._Zero == 0) << 1) | (SA1._Negative & 0x80) | (SA1._Overflow << 6);
+	SA1.Registers.P.W &= ~(Zero | Negative | Carry | Overflow);
+	SA1.Registers.P.W |= SA1._Carry | ((SA1._Zero == 0) << 1) | (SA1._Negative & 0x80) | (SA1._Overflow << 6);
 }
 
 static inline void S9xSA1FixCycles (void)
