@@ -386,9 +386,6 @@ void S9xStartScreenRefresh (void)
 		PPU.MosaicStart = 0;
 		PPU.RecomputeClipWindows = TRUE;
 		IPPU.PreviousLine = IPPU.CurrentLine = 0;
-
-		memset(GFX.ZBuffer, 0, GFX.ScreenSize);
-		memset(GFX.SubZBuffer, 0, GFX.ScreenSize);
 	}
 
 	if (++IPPU.FrameCount % Memory.ROMFramesPerSecond == 0)
@@ -711,6 +708,9 @@ void S9xUpdateScreen (void)
 					memmove(GFX.Screen + y * GFX.PPL, GFX.Screen + y * GFX.RealPPL, IPPU.RenderedScreenWidth * sizeof(uint16));
 			}
 		}
+
+		memset(GFX.ZBuffer + GFX.StartY * GFX.PPL, 0, (GFX.EndY - GFX.StartY + 1) * GFX.PPL);
+		memset(GFX.SubZBuffer + GFX.StartY * GFX.PPL, 0, (GFX.EndY - GFX.StartY + 1) * GFX.PPL);
 
 		if ((Memory.FillRAM[0x2130] & 0x30) != 0x30 && (Memory.FillRAM[0x2131] & 0x3f))
 			GFX.FixedColour = BUILD_PIXEL(IPPU.XB[PPU.FixedColourRed], IPPU.XB[PPU.FixedColourGreen], IPPU.XB[PPU.FixedColourBlue]);
