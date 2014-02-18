@@ -711,6 +711,15 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 		GFX.RealScreenColors = &IPPU.ScreenColors[((Tile >> BG.PaletteShift) & BG.PaletteMask) + BG.StartPalette]; \
 	GFX.ScreenColors = GFX.ClipColors ? BlackColourMap : GFX.RealScreenColors
 
+#define SET_UP_POINTERS() \
+	uint16*	Output = &GFX.S[Offset]; \
+	uint8*	Depth = &GFX.DB[Offset]; \
+	uint16*	SubScreen = &GFX.SubScreen[Offset]; \
+	uint8*	SubDepth = &GFX.SubZBuffer[Offset]
+
+#define STEP_POINTERS(Lines) \
+	Output += (Lines) * GFX.PPL, Depth += (Lines) * GFX.PPL, SubScreen += (Lines) * GFX.PPL, SubDepth += (Lines) * GFX.PPL
+
 #define NOMATH(Op, Main, Sub, SD) \
 	(Main)
 
@@ -748,6 +757,8 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 		return; \
 	SELECT_PALETTE(); \
 	\
+	SET_UP_POINTERS(); \
+	\
 	if (!(Tile & V_FLIP)) \
 	{ \
 		bp = pCache + BPSTART; \
@@ -761,7 +772,7 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 	\
 	if (!(Tile & H_FLIP)) \
 	{ \
-		for (l = LineCount; l > 0; l--, bp += bpDelta, Offset += GFX.PPL) \
+		for (l = LineCount; l > 0; l--, bp += bpDelta, STEP_POINTERS(1)) \
 		{ \
 			uint8 n; \
 			for (n = 0; n < 8; n++) \
@@ -772,7 +783,7 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 	} \
 	else \
 	{ \
-		for (l = LineCount; l > 0; l--, bp += bpDelta, Offset += GFX.PPL) \
+		for (l = LineCount; l > 0; l--, bp += bpDelta, STEP_POINTERS(1)) \
 		{ \
 			uint8 n; \
 			for (n = 0; n < 8; n++) \
@@ -811,6 +822,8 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 		return; \
 	SELECT_PALETTE(); \
 	\
+	SET_UP_POINTERS(); \
+	\
 	if (!(Tile & V_FLIP)) \
 	{ \
 		bp = pCache + BPSTART; \
@@ -824,7 +837,7 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 	\
 	if (!(Tile & H_FLIP)) \
 	{ \
-		for (l = LineCount; l > 0; l--, bp += bpDelta, Offset += GFX.PPL) \
+		for (l = LineCount; l > 0; l--, bp += bpDelta, STEP_POINTERS(1)) \
 		{ \
 			w = Width; \
 			uint8 n = StartPixel; \
@@ -836,7 +849,7 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 	} \
 	else \
 	{ \
-		for (l = LineCount; l > 0; l--, bp += bpDelta, Offset += GFX.PPL) \
+		for (l = LineCount; l > 0; l--, bp += bpDelta, STEP_POINTERS(1)) \
 		{ \
 			w = Width; \
 			uint8 n = StartPixel; \
@@ -876,6 +889,8 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 		return; \
 	SELECT_PALETTE(); \
 	\
+	SET_UP_POINTERS(); \
+	\
 	if (Tile & H_FLIP) \
 		StartPixel = 7 - StartPixel; \
 	\
@@ -886,7 +901,7 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 	\
 	if (Pix) \
 	{ \
-		for (l = LineCount; l > 0; l--, Offset += GFX.PPL) \
+		for (l = LineCount; l > 0; l--, STEP_POINTERS(1)) \
 		{ \
 			for (w = Width - 1; w >= 0; w--) \
 				DRAW_PIXEL(w, 1); \
@@ -923,9 +938,11 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 	GFX.RealScreenColors = IPPU.ScreenColors; \
 	GFX.ScreenColors = GFX.ClipColors ? BlackColourMap : GFX.RealScreenColors; \
 	\
+	SET_UP_POINTERS(); \
+	\
 	Color = GET_BACKDROP_COLOR(); \
 	\
-	for (l = GFX.StartY; l <= GFX.EndY; l++, Offset += GFX.PPL) \
+	for (l = GFX.StartY; l <= GFX.EndY; l++, STEP_POINTERS(1)) \
 	{ \
 		for (x = Left; x < Right; x++) \
 			DRAW_BACKDROP_PIXEL(x, Color); \
@@ -985,7 +1002,9 @@ extern struct SLineMatrixData	LineMatrixData[240];
 	uint32	Offset = GFX.StartY * GFX.PPL; \
 	struct SLineMatrixData	*l = &LineMatrixData[GFX.StartY]; \
 	\
-	for (uint32 Line = GFX.StartY; Line <= GFX.EndY; Line++, Offset += GFX.PPL, l++) \
+	SET_UP_POINTERS(); \
+	\
+	for (uint32 Line = GFX.StartY; Line <= GFX.EndY; Line++, l++, STEP_POINTERS(1)) \
 	{ \
 		int	yy, starty; \
 		\
@@ -1100,7 +1119,9 @@ extern struct SLineMatrixData	LineMatrixData[240];
 	uint32	Offset = StartY * GFX.PPL; \
 	struct SLineMatrixData	*l = &LineMatrixData[StartY]; \
 	\
-	for (uint32 Line = StartY; Line <= GFX.EndY; Line += VMosaic, Offset += VMosaic * GFX.PPL, l += VMosaic) \
+	SET_UP_POINTERS(); \
+	\
+	for (uint32 Line = StartY; Line <= GFX.EndY; Line += VMosaic, l += VMosaic, STEP_POINTERS(VMosaic)) \
 	{ \
 		if (Line + VMosaic > GFX.EndY) \
 			VMosaic = GFX.EndY - Line + 1; \
@@ -1276,20 +1297,20 @@ extern struct SLineMatrixData	LineMatrixData[240];
 // The 1x1 pixel plotter, for speedhacking modes.
 
 #define DRAW_PIXEL(N, M) \
-	if (Z1 > GFX.DB[Offset + N] && (M)) \
+	if (Z1 > Depth[N] && (M)) \
 	{ \
-		GFX.S[Offset + N] = MATH(GFX.ScreenColors[Pix], GFX.SubScreen[Offset + N], GFX.SubZBuffer[Offset + N]); \
-		GFX.DB[Offset + N] = Z2; \
+		Output[N] = MATH(GFX.ScreenColors[Pix], SubScreen[N], SubDepth[N]); \
+		Depth[N] = Z2; \
 	}
 
 #define GET_BACKDROP_COLOR() \
 	GFX.ScreenColors[Pix]
 
 #define DRAW_BACKDROP_PIXEL(N, C) \
-	if (Z1 > GFX.DB[Offset + N]) \
+	if (Z1 > Depth[N]) \
 	{ \
-		GFX.S[Offset + N] = MATH(C, GFX.SubScreen[Offset + N], GFX.SubZBuffer[Offset + N]); \
-		GFX.DB[Offset + N] = Z2; \
+		Output[N] = MATH(C, SubScreen[N], SubDepth[N]); \
+		Depth[N] = Z2; \
 	}
 
 #define NAME2	Normal1x1
@@ -1306,20 +1327,20 @@ extern struct SLineMatrixData	LineMatrixData[240];
 // The 2x1 pixel plotter, for normal rendering when we've used hires/interlace already this frame.
 
 #define DRAW_PIXEL_N2x1(N, M) \
-	if (Z1 > GFX.DB[Offset + 2 * N] && (M)) \
+	if (Z1 > Depth[2 * N] && (M)) \
 	{ \
-		GFX.S[Offset + 2 * N] = GFX.S[Offset + 2 * N + 1] = MATH(GFX.ScreenColors[Pix], GFX.SubScreen[Offset + 2 * N], GFX.SubZBuffer[Offset + 2 * N]); \
-		GFX.DB[Offset + 2 * N] = GFX.DB[Offset + 2 * N + 1] = Z2; \
+		Output[2 * N] = Output[2 * N + 1] = MATH(GFX.ScreenColors[Pix], SubScreen[2 * N], SubDepth[2 * N]); \
+		Depth[2 * N] = Depth[2 * N + 1] = Z2; \
 	}
 
 #define GET_BACKDROP_COLOR_N2x1() \
 	GFX.ScreenColors[Pix]
 
 #define DRAW_BACKDROP_PIXEL_N2x1(N, C) \
-	if (Z1 > GFX.DB[Offset + 2 * N]) \
+	if (Z1 > Depth[2 * N]) \
 	{ \
-		GFX.S[Offset + 2 * N] = GFX.S[Offset + 2 * N + 1] = MATH(C, GFX.SubScreen[Offset + 2 * N], GFX.SubZBuffer[Offset + 2 * N]); \
-		GFX.DB[Offset + 2 * N] = GFX.DB[Offset + 2 * N + 1] = Z2; \
+		Output[2 * N] = Output[2 * N + 1] = MATH(C, SubScreen[2 * N], SubDepth[2 * N]); \
+		Depth[2 * N] = Depth[2 * N + 1] = Z2; \
 	}
 
 #define DRAW_PIXEL(N, M)	DRAW_PIXEL_N2x1(N, M)
@@ -1346,22 +1367,22 @@ extern struct SLineMatrixData	LineMatrixData[240];
 //     We don't know how Sub(0, y) is handled.
 
 #define DRAW_PIXEL_H2x1(N, M) \
-	if (Z1 > GFX.DB[Offset + 2 * N] && (M)) \
+	if (Z1 > Depth[2 * N] && (M)) \
 	{ \
-		GFX.S[Offset + 2 * N] = MATH((GFX.ClipColors ? 0 : GFX.SubScreen[Offset + 2 * N]), GFX.RealScreenColors[Pix], GFX.SubZBuffer[Offset + 2 * N]); \
-		GFX.S[Offset + 2 * N + 1] = MATH(GFX.ScreenColors[Pix], GFX.SubScreen[Offset + 2 * N], GFX.SubZBuffer[Offset + 2 * N]); \
-		GFX.DB[Offset + 2 * N] = GFX.DB[Offset + 2 * N + 1] = Z2; \
+		Output[2 * N] = MATH((GFX.ClipColors ? 0 : SubScreen[2 * N]), GFX.RealScreenColors[Pix], SubDepth[2 * N]); \
+		Output[2 * N + 1] = MATH(GFX.ScreenColors[Pix], SubScreen[2 * N], SubDepth[2 * N]); \
+		Depth[2 * N] = Depth[2 * N + 1] = Z2; \
 	}
 
 #define GET_BACKDROP_COLOR_H2x1() \
 	GFX.ScreenColors[Pix]
 
 #define DRAW_BACKDROP_PIXEL_H2x1(N, C) \
-	if (Z1 > GFX.DB[Offset + 2 * N]) \
+	if (Z1 > Depth[2 * N]) \
 	{ \
-		GFX.S[Offset + 2 * N] = MATH((GFX.ClipColors ? 0 : GFX.SubScreen[Offset + 2 * N]), GFX.RealScreenColors[Pix], GFX.SubZBuffer[Offset + 2 * N]); \
-		GFX.S[Offset + 2 * N + 1] = MATH(C, GFX.SubScreen[Offset + 2 * N], GFX.SubZBuffer[Offset + 2 * N]); \
-		GFX.DB[Offset + 2 * N] = GFX.DB[Offset + 2 * N + 1] = Z2; \
+		Output[2 * N] = MATH((GFX.ClipColors ? 0 : SubScreen[2 * N]), GFX.RealScreenColors[Pix], SubDepth[2 * N]); \
+		Output[2 * N + 1] = MATH(C, SubScreen[Offset + 2 * N], SubDepth[2 * N]); \
+		Depth[2 * N] = Depth[2 * N + 1] = Z2; \
 	}
 
 #define DRAW_PIXEL(N, M)	DRAW_PIXEL_H2x1(N, M)
