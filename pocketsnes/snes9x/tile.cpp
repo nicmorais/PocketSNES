@@ -750,7 +750,6 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 	uint8			*pCache; \
 	register int32	l; \
 	register uint8	*bp, Pix; \
-	register int8	bpDelta; \
 	\
 	GET_CACHED_TILE(); \
 	if (IS_BLANK_TILE()) \
@@ -759,20 +758,36 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 	\
 	SET_UP_POINTERS(); \
 	\
+	if (!(Tile & (V_FLIP | H_FLIP))) \
+	{ \
+		bp = pCache + BPSTART; \
+		for (l = LineCount; l > 0; l--, bp += 8 * PITCH, STEP_POINTERS(1)) \
+		{ \
+			uint8 n; \
+			for (n = 0; n < 8; n++) \
+			{ \
+				DRAW_PIXEL(n, Pix = bp[n]); \
+			} \
+		} \
+	} \
+	else \
 	if (!(Tile & V_FLIP)) \
 	{ \
 		bp = pCache + BPSTART; \
-		bpDelta = 8 * PITCH; \
+		for (l = LineCount; l > 0; l--, bp += 8 * PITCH, STEP_POINTERS(1)) \
+		{ \
+			uint8 n; \
+			for (n = 0; n < 8; n++) \
+			{ \
+				DRAW_PIXEL(n, Pix = bp[7 - n]); \
+			} \
+		} \
 	} \
 	else \
-	{ \
-		bp = pCache + 56 - BPSTART; \
-		bpDelta = -8 * PITCH; \
-	} \
-	\
 	if (!(Tile & H_FLIP)) \
 	{ \
-		for (l = LineCount; l > 0; l--, bp += bpDelta, STEP_POINTERS(1)) \
+		bp = pCache + 56 - BPSTART; \
+		for (l = LineCount; l > 0; l--, bp -= 8 * PITCH, STEP_POINTERS(1)) \
 		{ \
 			uint8 n; \
 			for (n = 0; n < 8; n++) \
@@ -783,7 +798,8 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 	} \
 	else \
 	{ \
-		for (l = LineCount; l > 0; l--, bp += bpDelta, STEP_POINTERS(1)) \
+		bp = pCache + 56 - BPSTART; \
+		for (l = LineCount; l > 0; l--, bp -= 8 * PITCH, STEP_POINTERS(1)) \
 		{ \
 			uint8 n; \
 			for (n = 0; n < 8; n++) \
@@ -815,7 +831,6 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 	uint8			*pCache; \
 	register int32	l; \
 	register uint8	*bp, Pix, w; \
-	register int8	bpDelta; \
 	\
 	GET_CACHED_TILE(); \
 	if (IS_BLANK_TILE()) \
@@ -824,20 +839,38 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 	\
 	SET_UP_POINTERS(); \
 	\
+	if (!(Tile & (V_FLIP | H_FLIP))) \
+	{ \
+		bp = pCache + BPSTART; \
+		for (l = LineCount; l > 0; l--, bp += 8 * PITCH, STEP_POINTERS(1)) \
+		{ \
+			w = Width; \
+			uint8 n = StartPixel; \
+			do { \
+				DRAW_PIXEL(n, Pix = bp[n]); \
+				n++; \
+			} while (--w > 0); \
+		} \
+	} \
+	else \
 	if (!(Tile & V_FLIP)) \
 	{ \
 		bp = pCache + BPSTART; \
-		bpDelta = 8 * PITCH; \
+		for (l = LineCount; l > 0; l--, bp += 8 * PITCH, STEP_POINTERS(1)) \
+		{ \
+			w = Width; \
+			uint8 n = StartPixel; \
+			do { \
+				DRAW_PIXEL(n, Pix = bp[7 - n]); \
+				n++; \
+			} while (--w > 0); \
+		} \
 	} \
 	else \
-	{ \
-		bp = pCache + 56 - BPSTART; \
-		bpDelta = -8 * PITCH; \
-	} \
-	\
 	if (!(Tile & H_FLIP)) \
 	{ \
-		for (l = LineCount; l > 0; l--, bp += bpDelta, STEP_POINTERS(1)) \
+		bp = pCache + 56 - BPSTART; \
+		for (l = LineCount; l > 0; l--, bp -= 8 * PITCH, STEP_POINTERS(1)) \
 		{ \
 			w = Width; \
 			uint8 n = StartPixel; \
@@ -849,7 +882,8 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 	} \
 	else \
 	{ \
-		for (l = LineCount; l > 0; l--, bp += bpDelta, STEP_POINTERS(1)) \
+		bp = pCache + 56 - BPSTART; \
+		for (l = LineCount; l > 0; l--, bp -= 8 * PITCH, STEP_POINTERS(1)) \
 		{ \
 			w = Width; \
 			uint8 n = StartPixel; \
