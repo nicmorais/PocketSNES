@@ -1144,9 +1144,7 @@ uint8 S9xGetPPU (uint16 Address)
 				if (PPU.Need16x8Mulitply)
 				{
 					int32 r = (int32) PPU.MatrixA * (int32) (PPU.MatrixB >> 8);
-					Memory.FillRAM[0x2134] = (uint8) r;
-					Memory.FillRAM[0x2135] = (uint8) (r >> 8);
-					Memory.FillRAM[0x2136] = (uint8) (r >> 16);
+					WRITE_3WORD(&Memory.FillRAM[0x2134], r);
 					PPU.Need16x8Mulitply = FALSE;
 				}
 			#ifdef DEBUGGER
@@ -1513,8 +1511,7 @@ void S9xSetCPU (uint8 Byte, uint16 Address)
 			{
 				uint32 res = Memory.FillRAM[0x4202] * Byte;
 				// FIXME: The update occurs 8 machine cycles after $4203 is set.
-				Memory.FillRAM[0x4216] = (uint8) res;
-				Memory.FillRAM[0x4217] = (uint8) (res >> 8);
+				WRITE_WORD(&Memory.FillRAM[0x4216], res);
 				break;
 			}
 
@@ -1524,14 +1521,12 @@ void S9xSetCPU (uint8 Byte, uint16 Address)
 
 			case 0x4206: // WRDIVB
 			{
-				uint16 a = Memory.FillRAM[0x4204] + (Memory.FillRAM[0x4205] << 8);
+				uint16 a = READ_WORD(&Memory.FillRAM[0x4204]);
 				uint16 div = Byte ? a / Byte : 0xffff;
 				uint16 rem = Byte ? a % Byte : a;
 				// FIXME: The update occurs 16 machine cycles after $4206 is set.
-				Memory.FillRAM[0x4214] = (uint8) div;
-				Memory.FillRAM[0x4215] = div >> 8;
-				Memory.FillRAM[0x4216] = (uint8) rem;
-				Memory.FillRAM[0x4217] = rem >> 8;
+				WRITE_WORD(&Memory.FillRAM[0x4214], div);
+				WRITE_WORD(&Memory.FillRAM[0x4216], rem);
 				break;
 			}
 
