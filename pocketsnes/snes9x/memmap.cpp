@@ -1100,18 +1100,22 @@ bool8 CMemory::Init (void)
 		return (FALSE);
     }
 
-	memset(RAM, 0,  0x20000);
+	// RAM is initialised in S9xReset.
+	// memset(RAM, 0,  0x20000);
 	memset(SRAM, 0, 0x20000);
-	memset(VRAM, 0, 0x10000);
-	memset(ROM, 0,  MAX_ROM_SIZE + 0x200 + 0x8000);
+	// VRAM is initialised in S9xReset.
+	// memset(VRAM, 0, 0x10000);
+	// ROM is initialised in LoadROM; FillRAM is initialised in S9xReset.
+	// memset(ROM, 0,  MAX_ROM_SIZE + 0x200 + 0x8000);
 
-	memset(IPPU.TileCache[TILE_2BIT], 0,       MAX_2BIT_TILES * 64);
-	memset(IPPU.TileCache[TILE_4BIT], 0,       MAX_4BIT_TILES * 64);
-	memset(IPPU.TileCache[TILE_8BIT], 0,       MAX_8BIT_TILES * 64);
-	memset(IPPU.TileCache[TILE_2BIT_EVEN], 0,  MAX_2BIT_TILES * 64);
-	memset(IPPU.TileCache[TILE_2BIT_ODD], 0,   MAX_2BIT_TILES * 64);
-	memset(IPPU.TileCache[TILE_4BIT_EVEN], 0,  MAX_4BIT_TILES * 64);
-	memset(IPPU.TileCache[TILE_4BIT_ODD], 0,   MAX_4BIT_TILES * 64);
+	// TileCache is meaningless while TileCached is FALSE.
+	// memset(IPPU.TileCache[TILE_2BIT], 0,       MAX_2BIT_TILES * 64);
+	// memset(IPPU.TileCache[TILE_4BIT], 0,       MAX_4BIT_TILES * 64);
+	// memset(IPPU.TileCache[TILE_8BIT], 0,       MAX_8BIT_TILES * 64);
+	// memset(IPPU.TileCache[TILE_2BIT_EVEN], 0,  MAX_2BIT_TILES * 64);
+	// memset(IPPU.TileCache[TILE_2BIT_ODD], 0,   MAX_2BIT_TILES * 64);
+	// memset(IPPU.TileCache[TILE_4BIT_EVEN], 0,  MAX_4BIT_TILES * 64);
+	// memset(IPPU.TileCache[TILE_4BIT_ODD], 0,   MAX_4BIT_TILES * 64);
 
 	memset(IPPU.TileCached[TILE_2BIT], 0,      MAX_2BIT_TILES);
 	memset(IPPU.TileCached[TILE_4BIT], 0,      MAX_4BIT_TILES);
