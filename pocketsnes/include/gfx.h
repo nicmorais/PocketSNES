@@ -194,8 +194,6 @@ struct SGFX
 	uint32	RealPPL;			// true PPL of Screen buffer
 	uint32	PPL;				// number of pixels on each of Screen buffer
 	uint32	LinesPerTile;		// number of lines in 1 tile (4 or 8 due to interlace)
-	uint16	*ScreenColors;		// screen colors for rendering main
-	uint16	*RealScreenColors;	// screen colors, ignoring color window clipping
 	uint8	Z1;					// depth for comparison
 	uint8	Z2;					// depth to save
 	uint32	FixedColour;

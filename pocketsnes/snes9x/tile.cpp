@@ -701,15 +701,16 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 	(BG.Buffered[TileNumber] == BLANK_TILE)
 
 #define SELECT_PALETTE() \
+	uint16	*RealScreenColors; \
 	if (BG.DirectColourMode) \
 	{ \
 		if (IPPU.DirectColourMapsNeedRebuild) \
 			S9xBuildDirectColourMaps(); \
-		GFX.RealScreenColors = DirectColourMaps[(Tile >> 10) & 7]; \
+		RealScreenColors = DirectColourMaps[(Tile >> 10) & 7]; \
 	} \
 	else \
-		GFX.RealScreenColors = &IPPU.ScreenColors[((Tile >> BG.PaletteShift) & BG.PaletteMask) + BG.StartPalette]; \
-	GFX.ScreenColors = GFX.ClipColors ? BlackColourMap : GFX.RealScreenColors
+		RealScreenColors = &IPPU.ScreenColors[((Tile >> BG.PaletteShift) & BG.PaletteMask) + BG.StartPalette]; \
+	uint16	*ScreenColors = GFX.ClipColors ? BlackColourMap : RealScreenColors
 
 #define SET_UP_POINTERS() \
 	uint16*	Output = &GFX.S[Offset]; \
@@ -969,8 +970,8 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 	register uint32	l, x; \
 	register uint16 Color; \
 	\
-	GFX.RealScreenColors = IPPU.ScreenColors; \
-	GFX.ScreenColors = GFX.ClipColors ? BlackColourMap : GFX.RealScreenColors; \
+	uint16	*RealScreenColors = IPPU.ScreenColors; \
+	uint16	*ScreenColors = GFX.ClipColors ? BlackColourMap : RealScreenColors; \
 	\
 	SET_UP_POINTERS(); \
 	\
@@ -1018,17 +1019,18 @@ extern struct SLineMatrixData	LineMatrixData[240];
 
 #define DRAW_TILE_NORMAL() \
 	uint8	*VRAM1 = Memory.VRAM + 1; \
+	uint16	*RealScreenColors; \
 	\
 	if (DCMODE) \
 	{ \
 		if (IPPU.DirectColourMapsNeedRebuild) \
 			S9xBuildDirectColourMaps(); \
-		GFX.RealScreenColors = DirectColourMaps[0]; \
+		RealScreenColors = DirectColourMaps[0]; \
 	} \
 	else \
-		GFX.RealScreenColors = IPPU.ScreenColors; \
+		RealScreenColors = IPPU.ScreenColors; \
 	\
-	GFX.ScreenColors = GFX.ClipColors ? BlackColourMap : GFX.RealScreenColors; \
+	uint16	*ScreenColors = GFX.ClipColors ? BlackColourMap : RealScreenColors; \
 	\
 	int	aa, cc; \
 	int	startx; \
@@ -1117,17 +1119,18 @@ extern struct SLineMatrixData	LineMatrixData[240];
 
 #define DRAW_TILE_MOSAIC() \
 	uint8	*VRAM1 = Memory.VRAM + 1; \
+	uint16	*RealScreenColors; \
 	\
 	if (DCMODE) \
 	{ \
 		if (IPPU.DirectColourMapsNeedRebuild) \
 			S9xBuildDirectColourMaps(); \
-		GFX.RealScreenColors = DirectColourMaps[0]; \
+		RealScreenColors = DirectColourMaps[0]; \
 	} \
 	else \
-		GFX.RealScreenColors = IPPU.ScreenColors; \
+		RealScreenColors = IPPU.ScreenColors; \
 	\
-	GFX.ScreenColors = GFX.ClipColors ? BlackColourMap : GFX.RealScreenColors; \
+	uint16	*ScreenColors = GFX.ClipColors ? BlackColourMap : RealScreenColors; \
 	\
 	int	aa, cc; \
 	int	startx, StartY = GFX.StartY; \
@@ -1333,12 +1336,12 @@ extern struct SLineMatrixData	LineMatrixData[240];
 #define DRAW_PIXEL(N, M) \
 	if (Z1 > Depth[N] && (M)) \
 	{ \
-		Output[N] = MATH(GFX.ScreenColors[Pix], SubScreen[N], SubDepth[N]); \
+		Output[N] = MATH(ScreenColors[Pix], SubScreen[N], SubDepth[N]); \
 		Depth[N] = Z2; \
 	}
 
 #define GET_BACKDROP_COLOR() \
-	GFX.ScreenColors[Pix]
+	ScreenColors[Pix]
 
 #define DRAW_BACKDROP_PIXEL(N, C) \
 	if (Z1 > Depth[N]) \
@@ -1363,12 +1366,12 @@ extern struct SLineMatrixData	LineMatrixData[240];
 #define DRAW_PIXEL_N2x1(N, M) \
 	if (Z1 > Depth[2 * N] && (M)) \
 	{ \
-		Output[2 * N] = Output[2 * N + 1] = MATH(GFX.ScreenColors[Pix], SubScreen[2 * N], SubDepth[2 * N]); \
+		Output[2 * N] = Output[2 * N + 1] = MATH(ScreenColors[Pix], SubScreen[2 * N], SubDepth[2 * N]); \
 		Depth[2 * N] = Depth[2 * N + 1] = Z2; \
 	}
 
 #define GET_BACKDROP_COLOR_N2x1() \
-	GFX.ScreenColors[Pix]
+	ScreenColors[Pix]
 
 #define DRAW_BACKDROP_PIXEL_N2x1(N, C) \
 	if (Z1 > Depth[2 * N]) \
@@ -1403,18 +1406,18 @@ extern struct SLineMatrixData	LineMatrixData[240];
 #define DRAW_PIXEL_H2x1(N, M) \
 	if (Z1 > Depth[2 * N] && (M)) \
 	{ \
-		Output[2 * N] = MATH((GFX.ClipColors ? 0 : SubScreen[2 * N]), GFX.RealScreenColors[Pix], SubDepth[2 * N]); \
-		Output[2 * N + 1] = MATH(GFX.ScreenColors[Pix], SubScreen[2 * N], SubDepth[2 * N]); \
+		Output[2 * N] = MATH((GFX.ClipColors ? 0 : SubScreen[2 * N]), RealScreenColors[Pix], SubDepth[2 * N]); \
+		Output[2 * N + 1] = MATH(ScreenColors[Pix], SubScreen[2 * N], SubDepth[2 * N]); \
 		Depth[2 * N] = Depth[2 * N + 1] = Z2; \
 	}
 
 #define GET_BACKDROP_COLOR_H2x1() \
-	GFX.ScreenColors[Pix]
+	ScreenColors[Pix]
 
 #define DRAW_BACKDROP_PIXEL_H2x1(N, C) \
 	if (Z1 > Depth[2 * N]) \
 	{ \
-		Output[2 * N] = MATH((GFX.ClipColors ? 0 : SubScreen[2 * N]), GFX.RealScreenColors[Pix], SubDepth[2 * N]); \
+		Output[2 * N] = MATH((GFX.ClipColors ? 0 : SubScreen[2 * N]), RealScreenColors[Pix], SubDepth[2 * N]); \
 		Output[2 * N + 1] = MATH(C, SubScreen[Offset + 2 * N], SubDepth[2 * N]); \
 		Depth[2 * N] = Depth[2 * N + 1] = Z2; \
 	}
