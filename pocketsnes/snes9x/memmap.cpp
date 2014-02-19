@@ -1141,7 +1141,7 @@ bool8 CMemory::Init (void)
 	BSRAM   = ROM + 0x400000; // BS
 
 	SuperFX.pvRegisters = FillRAM + 0x3000;
-	SuperFX.nRamBanks   = 2; // Most only use 1.  1=64KB=512Mb, 2=128KB=1024Mb
+	SuperFX.nRamBanks   = 2; // Most only use 1.  1=64KB=512Kb, 2=128KB=1024Kb
 	SuperFX.pvRam       = SRAM;
 	SuperFX.nRomBanks   = (2 * 1024 * 1024) / (32 * 1024);
 	SuperFX.pvRom       = (uint8 *) ROM;
