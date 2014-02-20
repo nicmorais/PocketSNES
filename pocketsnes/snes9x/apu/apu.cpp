@@ -319,7 +319,7 @@ bool8 S9xMixSamples (uint8 *buffer, int sample_count)
 		}
 	}
 
-	if (Settings.ReverseStereo && Settings.Stereo)
+	if (SETTING_REVERSE_STEREO && Settings.Stereo)
 		ReverseStereo(dest, sample_count);
 
 	if (!Settings.Stereo || !SETTING_SIXTEEN_BIT_SOUND)

@@ -201,6 +201,14 @@
 #  define SETTING_SIXTEEN_BIT_SOUND Settings.SixteenBitSound
 #endif
 
+#if defined(PORT_ASSUMES_REVERSE_STEREO)
+#  define SETTING_REVERSE_STEREO 1
+#elif defined(PORT_ASSUMES_NO_REVERSE_STEREO)
+#  define SETTING_REVERSE_STEREO 0
+#else
+#  define SETTING_REVERSE_STEREO Settings.ReverseStereo
+#endif
+
 #include "65c816.h"
 #include "messages.h"
 
@@ -411,7 +419,9 @@ struct SSettings
 	uint32	SoundPlaybackRate;
 	uint32	SoundInputRate;
 	bool8	Stereo;
+#if !defined(PORT_ASSUMES_REVERSE_STEREO) && !defined(PORT_ASSUMES_NO_REVERSE_STEREO)
 	bool8	ReverseStereo;
+#endif
 	bool8	Mute;
 
 #if !defined(PORT_ASSUMES_SUPPORT_HI_RES) && !defined(PORT_ASSUMES_NO_SUPPORT_HI_RES)

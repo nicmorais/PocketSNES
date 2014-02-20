@@ -404,7 +404,9 @@ void S9xLoadConfigFiles (char **argv, int argc)
 	Settings.SixteenBitSound            =  conf.GetBool("Sound::16BitSound",                   true);
 #endif
 	Settings.Stereo                     =  conf.GetBool("Sound::Stereo",                       true);
+#if !defined(PORT_ASSUMES_REVERSE_STEREO) && !defined(PORT_ASSUMES_NO_REVERSE_STEREO)
 	Settings.ReverseStereo              =  conf.GetBool("Sound::ReverseStereo",                false);
+#endif
 	Settings.SoundPlaybackRate          =  conf.GetUInt("Sound::Rate",                         32000);
 	Settings.SoundInputRate             =  conf.GetUInt("Sound::InputRate",                    32000);
 	Settings.Mute                       =  conf.GetBool("Sound::Mute",                         false);
@@ -519,7 +521,9 @@ void S9xUsage (void)
 	S9xMessage(S9X_INFO, S9X_USAGE, "-soundsync                      Synchronize sound as far as possible");
 	S9xMessage(S9X_INFO, S9X_USAGE, "-playbackrate <Hz>              Set sound playback rate");
 	S9xMessage(S9X_INFO, S9X_USAGE, "-inputrate <Hz>                 Set sound input rate");
+#if !defined(PORT_ASSUMES_REVERSE_STEREO) && !defined(PORT_ASSUMES_NO_REVERSE_STEREO)
 	S9xMessage(S9X_INFO, S9X_USAGE, "-reversestereo                  Reverse stereo sound output");
+#endif
 	S9xMessage(S9X_INFO, S9X_USAGE, "-nostereo                       Disable stereo sound output");
 #if !defined(PORT_ASSUMES_SIXTEEN_BIT_SOUND) && !defined(PORT_ASSUMES_NO_SIXTEEN_BIT_SOUND)
 	S9xMessage(S9X_INFO, S9X_USAGE, "-eightbit                       Use 8bit sound instead of 16bit");
@@ -652,9 +656,11 @@ char * S9xParseArgs (char **argv, int argc)
 				else
 					S9xUsage();
 			}
+#if !defined(PORT_ASSUMES_REVERSE_STEREO) && !defined(PORT_ASSUMES_NO_REVERSE_STEREO)
 			else
 			if (!strcasecmp(argv[i], "-reversestereo"))
 				Settings.ReverseStereo = TRUE;
+#endif
 			else
 			if (!strcasecmp(argv[i], "-nostereo"))
 				Settings.Stereo = FALSE;
