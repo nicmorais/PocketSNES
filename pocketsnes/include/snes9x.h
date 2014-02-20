@@ -184,6 +184,15 @@
 #endif
 
 #include "port.h"
+
+#if defined(PORT_ASSUMES_SUPPORT_HI_RES)
+#  define SETTING_SUPPORT_HI_RES 1
+#elif defined(PORT_ASSUMES_NO_SUPPORT_HI_RES)
+#  define SETTING_SUPPORT_HI_RES 0
+#else
+#  define SETTING_SUPPORT_HI_RES Settings.SupportHiRes
+#endif
+
 #include "65c816.h"
 #include "messages.h"
 
@@ -230,8 +239,8 @@
 #define SNES_HEIGHT_EXTENDED		239
 #define MAX_SNES_WIDTH				(SNES_WIDTH * 2)
 #define MAX_SNES_HEIGHT				(SNES_HEIGHT_EXTENDED * 2)
-#define IMAGE_WIDTH					(Settings.SupportHiRes ? MAX_SNES_WIDTH : SNES_WIDTH)
-#define IMAGE_HEIGHT				(Settings.SupportHiRes ? MAX_SNES_HEIGHT : SNES_HEIGHT_EXTENDED)
+#define IMAGE_WIDTH					(SETTING_SUPPORT_HI_RES ? MAX_SNES_WIDTH : SNES_WIDTH)
+#define IMAGE_HEIGHT				(SETTING_SUPPORT_HI_RES ? MAX_SNES_HEIGHT : SNES_HEIGHT_EXTENDED)
 
 #define	NTSC_MASTER_CLOCK			21477272.0
 #define	PAL_MASTER_CLOCK			21281370.0
@@ -395,7 +404,9 @@ struct SSettings
 	bool8	ReverseStereo;
 	bool8	Mute;
 
+#if !defined(PORT_ASSUMES_SUPPORT_HI_RES) && !defined(PORT_ASSUMES_NO_SUPPORT_HI_RES)
 	bool8	SupportHiRes;
+#endif
 	bool8	Transparency;
 	uint8	BG_Forced;
 	bool8	DisableGraphicWindows;

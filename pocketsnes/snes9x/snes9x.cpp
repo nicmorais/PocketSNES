@@ -409,7 +409,9 @@ void S9xLoadConfigFiles (char **argv, int argc)
 
 	// Display
 
+#if !defined(PORT_ASSUMES_SUPPORT_HI_RES) && !defined(PORT_ASSUMES_NO_SUPPORT_HI_RES)
 	Settings.SupportHiRes               =  conf.GetBool("Display::HiRes",                      true);
+#endif
 	Settings.Transparency               =  conf.GetBool("Display::Transparency",               true);
 	Settings.DisableGraphicWindows      = !conf.GetBool("Display::GraphicWindows",             true);
 	Settings.DisplayFrameRate           =  conf.GetBool("Display::DisplayFrameRate",           false);
@@ -524,8 +526,10 @@ void S9xUsage (void)
 	// DISPLAY OPTIONS
 	S9xMessage(S9X_INFO, S9X_USAGE, "-displayframerate               Display the frame rate counter");
 	S9xMessage(S9X_INFO, S9X_USAGE, "-displaykeypress                Display input of all controllers and peripherals");
+#if !defined(PORT_ASSUMES_SUPPORT_HI_RES) && !defined(PORT_ASSUMES_NO_SUPPORT_HI_RES)
 	S9xMessage(S9X_INFO, S9X_USAGE, "-nohires                        (Not recommended) Disable support for hi-res and");
 	S9xMessage(S9X_INFO, S9X_USAGE, "                                interlace modes");
+#endif
 	S9xMessage(S9X_INFO, S9X_USAGE, "-notransparency                 (Not recommended) Disable transparency effects");
 	S9xMessage(S9X_INFO, S9X_USAGE, "-nowindows                      (Not recommended) Disable graphic window effects");
 	S9xMessage(S9X_INFO, S9X_USAGE, "");
@@ -665,9 +669,11 @@ char * S9xParseArgs (char **argv, int argc)
 			else
 			if (!strcasecmp(argv[i], "-displaykeypress"))
 				Settings.DisplayPressedKeys = TRUE;
+#if !defined(PORT_ASSUMES_SUPPORT_HI_RES) && !defined(PORT_ASSUMES_NO_SUPPORT_HI_RES)
 			else
 			if (!strcasecmp(argv[i], "-nohires"))
 				Settings.SupportHiRes = FALSE;
+#endif
 			else
 			if (!strcasecmp(argv[i], "-notransparency"))
 				Settings.Transparency = FALSE;

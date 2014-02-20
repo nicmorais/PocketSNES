@@ -496,7 +496,7 @@ void S9xSelectTileRenderers (int BGMode, bool8 sub, bool8 obj)
 	bool8 interlace = obj ? FALSE : IPPU.Interlace;
 	bool8 hires = !sub && (BGMode == 5 || BGMode == 6 || IPPU.PseudoHires);
 
-	if (!IPPU.DoubleWidthPixels)	// normal width
+	if (!SETTING_SUPPORT_HI_RES || !IPPU.DoubleWidthPixels)	// normal width
 	{
 		DT     = Renderers_DrawTile16Normal1x1;
 		DCT    = Renderers_DrawClippedTile16Normal1x1;

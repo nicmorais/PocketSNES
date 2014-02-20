@@ -1800,7 +1800,7 @@ int S9xUnfreezeFromStream (STREAM stream)
 			IPPU.RenderedScreenHeight = min(ssi->Height, IMAGE_HEIGHT);
 			const bool8 scaleDownX = IPPU.RenderedScreenWidth  < ssi->Width;
 			const bool8 scaleDownY = IPPU.RenderedScreenHeight < ssi->Height && ssi->Height > SNES_HEIGHT_EXTENDED;
-			GFX.DoInterlace = Settings.SupportHiRes ? ssi->Interlaced : 0;
+			GFX.DoInterlace = SETTING_SUPPORT_HI_RES ? ssi->Interlaced : 0;
 
 			uint8	*rowpix = ssi->Data;
 			uint16	*screen = GFX.Screen;

@@ -959,7 +959,7 @@ void S9xSetPPU (uint8 Byte, uint16 Address)
 					if (Byte & 0x04)
 					{
 						PPU.ScreenHeight = SNES_HEIGHT_EXTENDED;
-						if (IPPU.DoubleHeightPixels)
+						if (SETTING_SUPPORT_HI_RES && IPPU.DoubleHeightPixels)
 							IPPU.RenderedScreenHeight = PPU.ScreenHeight << 1;
 						else
 							IPPU.RenderedScreenHeight = PPU.ScreenHeight;
