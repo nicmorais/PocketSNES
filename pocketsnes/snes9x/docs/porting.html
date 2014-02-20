@@ -114,6 +114,14 @@
 		<p>
 			If sound samples for the left and right stereo channels are always output as-is in your port, define this. It is equivalent to setting <code>Settings.ReverseStereo</code> to <code>FALSE</code>.
 		</p>
+		<h3><code>PORT_ASSUMES_GRAPHIC_WINDOWS</code></h3>
+		<p>
+			If SNES clipping windows are always enabled in your port, define this. It is equivalent to setting <code>Settings.DisableGraphicWindows</code> to <code>FALSE</code>.
+		</p>
+		<h3><code>PORT_ASSUMES_NO_GRAPHIC_WINDOWS</code></h3>
+		<p>
+			If SNES clipping windows are always disabled in your port, define this. It is equivalent to setting <code>Settings.DisableGraphicWindows</code> to <code>TRUE</code>.
+		</p>
 		<h2>Controllers Management</h2>
 		<p>
 			Read <code>controls.h</code>, <code>crosshair.h</code>, <code>controls.txt</code> and <code>control-inputs.txt</code> for details. This section is the minimal explanation to get the SNES controls workable.

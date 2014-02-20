@@ -209,6 +209,14 @@
 #  define SETTING_REVERSE_STEREO Settings.ReverseStereo
 #endif
 
+#if defined(PORT_ASSUMES_GRAPHIC_WINDOWS)
+#  define SETTING_GRAPHIC_WINDOWS 1
+#elif defined(PORT_ASSUMES_NO_GRAPHIC_WINDOWS)
+#  define SETTING_GRAPHIC_WINDOWS 0
+#else
+#  define SETTING_GRAPHIC_WINDOWS (!Settings.DisableGraphicWindows)
+#endif
+
 #include "65c816.h"
 #include "messages.h"
 
@@ -429,7 +437,9 @@ struct SSettings
 #endif
 	bool8	Transparency;
 	uint8	BG_Forced;
+#if !defined(PORT_ASSUMES_GRAPHIC_WINDOWS) && !defined(PORT_ASSUMES_NO_GRAPHIC_WINDOWS)
 	bool8	DisableGraphicWindows;
+#endif
 
 	bool8	DisplayFrameRate;
 	bool8	DisplayWatchedAddresses;

@@ -417,7 +417,9 @@ void S9xLoadConfigFiles (char **argv, int argc)
 	Settings.SupportHiRes               =  conf.GetBool("Display::HiRes",                      true);
 #endif
 	Settings.Transparency               =  conf.GetBool("Display::Transparency",               true);
+#if !defined(PORT_ASSUMES_GRAPHIC_WINDOWS) && !defined(PORT_ASSUMES_NO_GRAPHIC_WINDOWS)
 	Settings.DisableGraphicWindows      = !conf.GetBool("Display::GraphicWindows",             true);
+#endif
 	Settings.DisplayFrameRate           =  conf.GetBool("Display::DisplayFrameRate",           false);
 	Settings.DisplayWatchedAddresses    =  conf.GetBool("Display::DisplayWatchedAddresses",    false);
 	Settings.DisplayPressedKeys         =  conf.GetBool("Display::DisplayInput",               false);
@@ -539,7 +541,9 @@ void S9xUsage (void)
 	S9xMessage(S9X_INFO, S9X_USAGE, "                                interlace modes");
 #endif
 	S9xMessage(S9X_INFO, S9X_USAGE, "-notransparency                 (Not recommended) Disable transparency effects");
+#if !defined(PORT_ASSUMES_GRAPHIC_WINDOWS) && !defined(PORT_ASSUMES_NO_GRAPHIC_WINDOWS)
 	S9xMessage(S9X_INFO, S9X_USAGE, "-nowindows                      (Not recommended) Disable graphic window effects");
+#endif
 	S9xMessage(S9X_INFO, S9X_USAGE, "");
 
 	// CONTROLLER OPTIONS
@@ -689,9 +693,11 @@ char * S9xParseArgs (char **argv, int argc)
 			else
 			if (!strcasecmp(argv[i], "-notransparency"))
 				Settings.Transparency = FALSE;
+#if !defined(PORT_ASSUMES_GRAPHIC_WINDOWS) && !defined(PORT_ASSUMES_NO_GRAPHIC_WINDOWS)
 			else
 			if (!strcasecmp(argv[i], "-nowindows"))
 				Settings.DisableGraphicWindows = TRUE;
+#endif
 			else
 
 			// CONTROLLER OPTIONS

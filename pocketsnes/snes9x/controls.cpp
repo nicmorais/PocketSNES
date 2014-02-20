@@ -2222,8 +2222,12 @@ void S9xApplyCommand (s9xcommand_t cmd, int16 data1, int16 data2)
 						break;
 
 					case ClipWindows:
+#if !defined(PORT_ASSUMES_GRAPHIC_WINDOWS) && !defined(PORT_ASSUMES_NO_GRAPHIC_WINDOWS)
 						Settings.DisableGraphicWindows = !Settings.DisableGraphicWindows;
 						DisplayStateChange("Graphic clip windows", !Settings.DisableGraphicWindows);
+#else
+						DisplayStateChange("Graphic clip windows", SETTING_GRAPHIC_WINDOWS);
+#endif
 						break;
 
 					case Debugger:

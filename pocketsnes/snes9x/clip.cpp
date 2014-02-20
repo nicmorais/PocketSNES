@@ -394,7 +394,7 @@ void S9xComputeClipWindows (void)
 
 	for (j = 0; j < 5; j++)
 	{
-		uint8	W = Settings.DisableGraphicWindows ? 0 : CalcWindowMask(j, W1, W2);
+		uint8	W = SETTING_GRAPHIC_WINDOWS ? CalcWindowMask(j, W1, W2) : 0;
 		for (int sub = 0; sub < 2; sub++)
 		{
 			if (Memory.FillRAM[sub + 0x212e] & (1 << j))
