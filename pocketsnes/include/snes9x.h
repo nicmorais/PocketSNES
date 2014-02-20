@@ -193,6 +193,14 @@
 #  define SETTING_SUPPORT_HI_RES Settings.SupportHiRes
 #endif
 
+#if defined(PORT_ASSUMES_SIXTEEN_BIT_SOUND)
+#  define SETTING_SIXTEEN_BIT_SOUND 1
+#elif defined(PORT_ASSUMES_NO_SIXTEEN_BIT_SOUND)
+#  define SETTING_SIXTEEN_BIT_SOUND 0
+#else
+#  define SETTING_SIXTEEN_BIT_SOUND Settings.SixteenBitSound
+#endif
+
 #include "65c816.h"
 #include "messages.h"
 
@@ -397,7 +405,9 @@ struct SSettings
 	uint32	FrameTime;
 
 	bool8	SoundSync;
+#if !defined(PORT_ASSUMES_SIXTEEN_BIT_SOUND) && !defined(PORT_ASSUMES_NO_SIXTEEN_BIT_SOUND)
 	bool8	SixteenBitSound;
+#endif
 	uint32	SoundPlaybackRate;
 	uint32	SoundInputRate;
 	bool8	Stereo;

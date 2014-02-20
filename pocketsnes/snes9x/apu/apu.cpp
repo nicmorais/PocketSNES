@@ -275,7 +275,7 @@ bool8 S9xMixSamples (uint8 *buffer, int sample_count)
 	static int	shrink_buffer_size = -1;
 	uint8		*dest;
 
-	if (!Settings.SixteenBitSound || !Settings.Stereo)
+	if (!SETTING_SIXTEEN_BIT_SOUND || !Settings.Stereo)
 	{
 		/* We still need both stereo samples for generating the mono sample */
 		if (!Settings.Stereo)
@@ -311,7 +311,7 @@ bool8 S9xMixSamples (uint8 *buffer, int sample_count)
 		}
 		else
 		{
-			memset(buffer, (Settings.SixteenBitSound ? 0 : 128), (sample_count << (Settings.SixteenBitSound ? 1 : 0)) >> (Settings.Stereo ? 0 : 1));
+			memset(buffer, (SETTING_SIXTEEN_BIT_SOUND ? 0 : 128), (sample_count << (SETTING_SIXTEEN_BIT_SOUND ? 1 : 0)) >> (Settings.Stereo ? 0 : 1));
 			if (spc::lag == 0)
 				spc::lag = spc::lag_master;
 
@@ -322,7 +322,7 @@ bool8 S9xMixSamples (uint8 *buffer, int sample_count)
 	if (Settings.ReverseStereo && Settings.Stereo)
 		ReverseStereo(dest, sample_count);
 
-	if (!Settings.Stereo || !Settings.SixteenBitSound)
+	if (!Settings.Stereo || !SETTING_SIXTEEN_BIT_SOUND)
 	{
 		if (!Settings.Stereo)
 		{
@@ -330,10 +330,10 @@ bool8 S9xMixSamples (uint8 *buffer, int sample_count)
 			sample_count >>= 1;
 		}
 
-		if (!Settings.SixteenBitSound)
+		if (!SETTING_SIXTEEN_BIT_SOUND)
 			EightBitize(dest, sample_count);
 
-		memcpy(buffer, dest, (sample_count << (Settings.SixteenBitSound ? 1 : 0)));
+		memcpy(buffer, dest, (sample_count << (SETTING_SIXTEEN_BIT_SOUND ? 1 : 0)));
 	}
 
 	return (TRUE);
@@ -428,7 +428,7 @@ bool8 S9xInitSound (int buffer_ms, int lag_ms)
 	spc::buffer_size = sample_count;
 	if (Settings.Stereo)
 		spc::buffer_size <<= 1;
-	if (Settings.SixteenBitSound)
+	if (SETTING_SIXTEEN_BIT_SOUND)
 		spc::buffer_size <<= 1;
 
 	printf("Sound buffer size: %d (%d samples)\n", spc::buffer_size, sample_count);
