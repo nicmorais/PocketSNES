@@ -201,6 +201,14 @@
 #  define SETTING_SIXTEEN_BIT_SOUND Settings.SixteenBitSound
 #endif
 
+#if defined(PORT_ASSUMES_STEREO)
+#  define SETTING_STEREO 1
+#elif defined(PORT_ASSUMES_NO_STEREO)
+#  define SETTING_STEREO 0
+#else
+#  define SETTING_STEREO Settings.Stereo
+#endif
+
 #if defined(PORT_ASSUMES_REVERSE_STEREO)
 #  define SETTING_REVERSE_STEREO 1
 #elif defined(PORT_ASSUMES_NO_REVERSE_STEREO)
@@ -426,7 +434,9 @@ struct SSettings
 #endif
 	uint32	SoundPlaybackRate;
 	uint32	SoundInputRate;
+#if !defined(PORT_ASSUMES_STEREO) && !defined(PORT_ASSUMES_NO_STEREO)
 	bool8	Stereo;
+#endif
 #if !defined(PORT_ASSUMES_REVERSE_STEREO) && !defined(PORT_ASSUMES_NO_REVERSE_STEREO)
 	bool8	ReverseStereo;
 #endif

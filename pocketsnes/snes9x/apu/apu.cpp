@@ -275,10 +275,10 @@ bool8 S9xMixSamples (uint8 *buffer, int sample_count)
 	static int	shrink_buffer_size = -1;
 	uint8		*dest;
 
-	if (!SETTING_SIXTEEN_BIT_SOUND || !Settings.Stereo)
+	if (!SETTING_SIXTEEN_BIT_SOUND || !SETTING_STEREO)
 	{
 		/* We still need both stereo samples for generating the mono sample */
-		if (!Settings.Stereo)
+		if (!SETTING_STEREO)
 			sample_count <<= 1;
 
 		/* We still have to generate 16-bit samples for bit-dropping, too */
@@ -311,7 +311,7 @@ bool8 S9xMixSamples (uint8 *buffer, int sample_count)
 		}
 		else
 		{
-			memset(buffer, (SETTING_SIXTEEN_BIT_SOUND ? 0 : 128), (sample_count << (SETTING_SIXTEEN_BIT_SOUND ? 1 : 0)) >> (Settings.Stereo ? 0 : 1));
+			memset(buffer, (SETTING_SIXTEEN_BIT_SOUND ? 0 : 128), (sample_count << (SETTING_SIXTEEN_BIT_SOUND ? 1 : 0)) >> (SETTING_STEREO ? 0 : 1));
 			if (spc::lag == 0)
 				spc::lag = spc::lag_master;
 
@@ -319,12 +319,12 @@ bool8 S9xMixSamples (uint8 *buffer, int sample_count)
 		}
 	}
 
-	if (SETTING_REVERSE_STEREO && Settings.Stereo)
+	if (SETTING_REVERSE_STEREO && SETTING_STEREO)
 		ReverseStereo(dest, sample_count);
 
-	if (!Settings.Stereo || !SETTING_SIXTEEN_BIT_SOUND)
+	if (!SETTING_STEREO || !SETTING_SIXTEEN_BIT_SOUND)
 	{
-		if (!Settings.Stereo)
+		if (!SETTING_STEREO)
 		{
 			DeStereo(dest, sample_count);
 			sample_count >>= 1;
@@ -341,7 +341,7 @@ bool8 S9xMixSamples (uint8 *buffer, int sample_count)
 
 int S9xGetSampleCount (void)
 {
-	return (spc::resampler->avail() >> (Settings.Stereo ? 0 : 1));
+	return (spc::resampler->avail() >> (SETTING_STEREO ? 0 : 1));
 }
 
 /* TODO: Attach */
@@ -418,7 +418,7 @@ bool8 S9xInitSound (int buffer_ms, int lag_ms)
 	int	lag_sample_count = lag_ms    * 32000 / 1000;
 
 	spc::lag_master = lag_sample_count;
-	if (Settings.Stereo)
+	if (SETTING_STEREO)
 		spc::lag_master <<= 1;
 	spc::lag = spc::lag_master;
 
@@ -426,7 +426,7 @@ bool8 S9xInitSound (int buffer_ms, int lag_ms)
 		sample_count = APU_MINIMUM_SAMPLE_COUNT;
 
 	spc::buffer_size = sample_count;
-	if (Settings.Stereo)
+	if (SETTING_STEREO)
 		spc::buffer_size <<= 1;
 	if (SETTING_SIXTEEN_BIT_SOUND)
 		spc::buffer_size <<= 1;
