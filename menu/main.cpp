@@ -688,16 +688,18 @@ int Run(int sound)
 			// While the audio output is closed, there is no chance that the
 			// audio stream will request samples from Snes9x. Update settings.
 			Settings.SoundPlaybackRate = mMenuOptions.soundRate;
+#if !defined(PORT_ASSUMES_STEREO) && !defined(PORT_ASSUMES_NO_STEREO)
 			Settings.Stereo = mMenuOptions.stereo ? TRUE : FALSE;
+#endif
 			if (!PSNESInitSound())
 			{
 				fprintf(stderr, "S9xInitSound failed after rate change from %" PRIu32 " to %" PRIu32 "; sound will be muted\n", LastAudioRate, Settings.SoundPlaybackRate);
 			}
 			LastAudioRate = Settings.SoundPlaybackRate;
-			LastStereo = Settings.Stereo;
+			LastStereo = SETTING_STEREO;
 
-			sal_AudioInit(Settings.SoundPlaybackRate, Settings.SixteenBitSound ? 16 : 8,
-						Settings.Stereo, Memory.ROMFramesPerSecond);
+			sal_AudioInit(Settings.SoundPlaybackRate, SETTING_SIXTEEN_BIT_SOUND ? 16 : 8,
+						SETTING_STEREO, Memory.ROMFramesPerSecond);
 		}
 		sal_AudioResume();
 	}
@@ -775,10 +777,16 @@ int SnesInit()
 
 	// Here's how we do sound, video and input.
 	Settings.SoundSync = FALSE;
+#if !defined(PORT_ASSUMES_SIXTEEN_BIT_SOUND) && !defined(PORT_ASSUMES_NO_SIXTEEN_BIT_SOUND)
 	Settings.SixteenBitSound = TRUE;
+#endif
 	Settings.SoundInputRate = 32000;
+#if !defined(PORT_ASSUMES_REVERSE_STEREO) && !defined(PORT_ASSUMES_NO_REVERSE_STEREO)
 	Settings.ReverseStereo = FALSE;
+#endif
+#if !defined(PORT_ASSUMES_SUPPORT_HI_RES) && !defined(PORT_ASSUMES_NO_SUPPORT_HI_RES)
 	Settings.SupportHiRes = FALSE;
+#endif
 	GFX.Screen = IntermediateScreen;
 	GFX.Pitch = SNES_WIDTH * sizeof(uint16);
 	Settings.OpenGLEnable = FALSE;
@@ -840,7 +848,9 @@ int SnesInit()
 
 	// User settings.
 	Settings.SoundPlaybackRate = 44100;
+#if !defined(PORT_ASSUMES_STEREO) && !defined(PORT_ASSUMES_NO_STEREO)
 	Settings.Stereo = TRUE;
+#endif
 
 	if (!Memory.Init())
 	{
