@@ -744,8 +744,8 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 //     Z2 is the "cur_depth = new_depth". OBJ need the two separate.
 //     Pix is the pixel to draw.
 
-#define Z1	GFX.Z1
-#define Z2	GFX.Z2
+#define SET_UP_DEPTHS() \
+	uint8 Z1 = GFX.Z1, Z2 = GFX.Z2;
 
 #define DRAW_TILE() \
 	uint8			*pCache; \
@@ -758,6 +758,7 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 	SELECT_PALETTE(); \
 	\
 	SET_UP_POINTERS(); \
+	SET_UP_DEPTHS(); \
 	\
 	if (!(Tile & (V_FLIP | H_FLIP))) \
 	{ \
@@ -825,8 +826,8 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 
 // Basic routine to render a clipped tile. Inputs same as above.
 
-#define Z1	GFX.Z1
-#define Z2	GFX.Z2
+#define SET_UP_DEPTHS() \
+	uint8 Z1 = GFX.Z1, Z2 = GFX.Z2;
 
 #define DRAW_TILE() \
 	uint8			*pCache; \
@@ -839,6 +840,7 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 	SELECT_PALETTE(); \
 	\
 	SET_UP_POINTERS(); \
+	SET_UP_DEPTHS(); \
 	\
 	if (!(Tile & (V_FLIP | H_FLIP))) \
 	{ \
@@ -911,8 +913,8 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 // Basic routine to render a single mosaic pixel.
 // DRAW_PIXEL, BPSTART, Z1, Z2 and Pix are the same as above, but PITCH is not used.
 
-#define Z1	GFX.Z1
-#define Z2	GFX.Z2
+#define SET_UP_DEPTHS() \
+	uint8 Z1 = GFX.Z1, Z2 = GFX.Z2;
 
 #define DRAW_TILE() \
 	uint8			*pCache; \
@@ -925,6 +927,7 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 	SELECT_PALETTE(); \
 	\
 	SET_UP_POINTERS(); \
+	SET_UP_DEPTHS(); \
 	\
 	if (Tile & H_FLIP) \
 		StartPixel = 7 - StartPixel; \
