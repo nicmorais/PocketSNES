@@ -766,9 +766,9 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 		for (l = LineCount; l > 0; l--, bp += 8 * PITCH, STEP_POINTERS(1)) \
 		{ \
 			uint8 n; \
-			for (n = 0; n < 8; n += 2) \
+			for (n = 0; n < 8; n++) \
 			{ \
-				DRAW_2_PIXELS(n, bp[n], bp[n + 1]); \
+				DRAW_PIXEL(n, Pix = bp[n]); \
 			} \
 		} \
 	} \
@@ -779,9 +779,9 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 		for (l = LineCount; l > 0; l--, bp += 8 * PITCH, STEP_POINTERS(1)) \
 		{ \
 			uint8 n; \
-			for (n = 0; n < 8; n += 2) \
+			for (n = 0; n < 8; n++) \
 			{ \
-				DRAW_2_PIXELS(n, bp[7 - n], bp[6 - n]); \
+				DRAW_PIXEL(n, Pix = bp[7 - n]); \
 			} \
 		} \
 	} \
@@ -792,9 +792,9 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 		for (l = LineCount; l > 0; l--, bp -= 8 * PITCH, STEP_POINTERS(1)) \
 		{ \
 			uint8 n; \
-			for (n = 0; n < 8; n += 2) \
+			for (n = 0; n < 8; n++) \
 			{ \
-				DRAW_2_PIXELS(n, bp[n], bp[n + 1]); \
+				DRAW_PIXEL(n, Pix = bp[n]); \
 			} \
 		} \
 	} \
@@ -804,9 +804,9 @@ void S9xSelectTileConverter (int depth, bool8 hires, bool8 sub, bool8 mosaic)
 		for (l = LineCount; l > 0; l--, bp -= 8 * PITCH, STEP_POINTERS(1)) \
 		{ \
 			uint8 n; \
-			for (n = 0; n < 8; n += 2) \
+			for (n = 0; n < 8; n++) \
 			{ \
-				DRAW_2_PIXELS(n, bp[7 - n], bp[6 - n]); \
+				DRAW_PIXEL(n, Pix = bp[7 - n]); \
 			} \
 		} \
 	}
@@ -1342,23 +1342,6 @@ extern struct SLineMatrixData	LineMatrixData[240];
 		Output[N] = MATH(ScreenColors[Pix], SubScreen[N], SubDepth[N]); \
 		Depth[N] = Z2; \
 	}
-
-#define DRAW_2_PIXELS(N, M_A, M_B) \
-	do { \
-		uint16	OldZ_A = Depth[N], OldZ_B = Depth[N + 1]; \
-		uint8	Pix_A = M_A, Pix_B = M_B; \
-		uint16	Color_A = ScreenColors[Pix_A], Color_B = ScreenColors[Pix_B]; \
-		if (Z1 > OldZ_A && Pix_A) \
-		{ \
-			Output[N] = MATH(Color_A, SubScreen[N], SubDepth[N]); \
-			Depth[N] = Z2; \
-		} \
-		if (Z1 > OldZ_B && Pix_B) \
-		{ \
-			Output[N + 1] = MATH(Color_B, SubScreen[N + 1], SubDepth[N + 1]); \
-			Depth[N + 1] = Z2; \
-		} \
-	} while (0)
 
 #define GET_BACKDROP_COLOR() \
 	ScreenColors[Pix]
