@@ -461,70 +461,76 @@ static void WRITE_4PIXELS16 (uint32 Offset, uint8 *Pixels, uint16 *ScreenColors)
 #if defined(__MIPSEL) && defined(__GNUC__) && !defined(NO_ASM)
 	uint16 *Screen = (uint16 *) GFX.S + Offset;
 	uint8  *Depth = GFX.DB + Offset;
-	uint8  Pixel_A, Pixel_B, Pixel_C, Pixel_D;
-	uint8  Depth_A, Depth_B, Depth_C, Depth_D;
+	uint8  In8, Z;
 	bool8  Cond;
 	uint32 Temp;
 	__asm__ __volatile__ (
 		".set noreorder                        \n"
-		"   lbu   %[In8A], 0(%[In8])           \n"
-		"   lbu   %[In8B], 1(%[In8])           \n"
-		"   lbu   %[In8C], 2(%[In8])           \n"
-		"   lbu   %[In8D], 3(%[In8])           \n"
-		"   lbu   %[ZA], 0(%[Z])               \n"
-		"   lbu   %[ZB], 1(%[Z])               \n"
-		"   lbu   %[ZC], 2(%[Z])               \n"
-		"   lbu   %[ZD], 3(%[Z])               \n"
+		/* All the pixels are read in In32, and all the depths are read in
+		 * Z32. Since this is the little-endian path, the low byte is In32[0]
+		 * and Z32[0]. */
 		/* If In8A is non-zero (opaque) and ZCompare > ZA, write the pixel to
 		 * the screen from the palette. */
-		"   sltiu %[Temp], %[In8A], 1          \n"
-		"   sltu  %[Cond], %[ZCompare], %[ZA]  \n"
+		"   andi  %[In8], %[In32], 0xFF        \n"
+		"   andi  %[Z], %[Z32], 0xFF           \n"
+		"   sltiu %[Temp], %[In8], 1           \n"
+		"   sltu  %[Cond], %[ZCompare], %[Z]   \n"
 		"   or    %[Cond], %[Cond], %[Temp]    \n"
 		/* Otherwise skip to the next pixel, B. */
 		"   bne   %[Cond], $0, 2f              \n"
 		/* Load the address of the palette entry (16-bit) corresponding to
 		 * this pixel (partially in the delay slot). */
-		"   sll   %[In8A], %[In8A], 1          \n"
-		"   addu  %[Temp], %[Palette], %[In8A] \n"
+		"   sll   %[In8], %[In8], 1            \n"
+		"   addu  %[Temp], %[Palette], %[In8]  \n"
 		/* Load the palette entry. While that's being done, store the new
 		 * depth for this pixel. Then store to the screen. */
 		"   lhu   %[Temp], 0(%[Temp])          \n"
-		"   sb    %[ZSet], 0(%[Z])             \n"
-		"   sh    %[Temp], 0(%[Out16])         \n"
+		"   sb    %[ZSet], 0(%[ZPtr])          \n"
+		"   sh    %[Temp], 0(%[OutPtr])        \n"
 		/* Now do the same for pixel B. */
-		"2: sltiu %[Temp], %[In8B], 1          \n"
-		"   sltu  %[Cond], %[ZCompare], %[ZB]  \n"
+		"2: srl   %[In8], %[In32], 8           \n"
+		"   andi  %[In8], %[In8], 0xFF         \n"
+		"   srl   %[Z], %[Z32], 8              \n"
+		"   andi  %[Z], %[Z], 0xFF             \n"
+		"   sltiu %[Temp], %[In8], 1           \n"
+		"   sltu  %[Cond], %[ZCompare], %[Z]   \n"
 		"   or    %[Cond], %[Cond], %[Temp]    \n"
 		"   bne   %[Cond], $0, 3f              \n"
-		"   sll   %[In8B], %[In8B], 1          \n"
-		"   addu  %[Temp], %[Palette], %[In8B] \n"
+		"   sll   %[In8], %[In8], 1            \n"
+		"   addu  %[Temp], %[Palette], %[In8]  \n"
 		"   lhu   %[Temp], 0(%[Temp])          \n"
-		"   sb    %[ZSet], 1(%[Z])             \n"
-		"   sh    %[Temp], 2(%[Out16])         \n"
+		"   sb    %[ZSet], 1(%[ZPtr])          \n"
+		"   sh    %[Temp], 2(%[OutPtr])        \n"
 		/* Now do the same for pixel C. */
-		"3: sltiu %[Temp], %[In8C], 1          \n"
-		"   sltu  %[Cond], %[ZCompare], %[ZC]  \n"
+		"3: srl   %[In8], %[In32], 16          \n"
+		"   andi  %[In8], %[In8], 0xFF         \n"
+		"   srl   %[Z], %[Z32], 16             \n"
+		"   andi  %[Z], %[Z], 0xFF             \n"
+		"   sltiu %[Temp], %[In8], 1           \n"
+		"   sltu  %[Cond], %[ZCompare], %[Z]   \n"
 		"   or    %[Cond], %[Cond], %[Temp]    \n"
 		"   bne   %[Cond], $0, 4f              \n"
-		"   sll   %[In8C], %[In8C], 1          \n"
-		"   addu  %[Temp], %[Palette], %[In8C] \n"
+		"   sll   %[In8], %[In8], 1            \n"
+		"   addu  %[Temp], %[Palette], %[In8]  \n"
 		"   lhu   %[Temp], 0(%[Temp])          \n"
-		"   sb    %[ZSet], 2(%[Z])             \n"
-		"   sh    %[Temp], 4(%[Out16])         \n"
+		"   sb    %[ZSet], 2(%[ZPtr])          \n"
+		"   sh    %[Temp], 4(%[OutPtr])        \n"
 		/* Now do the same for pixel D. */
-		"4: sltiu %[Temp], %[In8D], 1          \n"
-		"   sltu  %[Cond], %[ZCompare], %[ZD]  \n"
+		"4: srl   %[In8], %[In32], 24          \n"
+		"   srl   %[Z], %[Z32], 24             \n"
+		"   sltiu %[Temp], %[In8], 1           \n"
+		"   sltu  %[Cond], %[ZCompare], %[Z]   \n"
 		"   or    %[Cond], %[Cond], %[Temp]    \n"
 		"   bne   %[Cond], $0, 5f              \n"
-		"   sll   %[In8D], %[In8D], 1          \n"
-		"   addu  %[Temp], %[Palette], %[In8D] \n"
+		"   sll   %[In8], %[In8], 1            \n"
+		"   addu  %[Temp], %[Palette], %[In8]  \n"
 		"   lhu   %[Temp], 0(%[Temp])          \n"
-		"   sb    %[ZSet], 3(%[Z])             \n"
-		"   sh    %[Temp], 6(%[Out16])         \n"
+		"   sb    %[ZSet], 3(%[ZPtr])          \n"
+		"   sh    %[Temp], 6(%[OutPtr])        \n"
 		"5:                                    \n"
 		".set reorder                          \n"
-		: /* output */  [In8A] "=&r" (Pixel_A), [In8B] "=&r" (Pixel_B), [In8C] "=&r" (Pixel_C), [In8D] "=&r" (Pixel_D), [ZA] "=&r" (Depth_A), [ZB] "=&r" (Depth_B), [ZC] "=&r" (Depth_C), [ZD] "=&r" (Depth_D), [Cond] "=&r" (Cond), [Temp] "=&r" (Temp)
-		: /* input */   [Out16] "r" (Screen), [Z] "r" (Depth), [In8] "r" (Pixels), [Palette] "r" (ScreenColors), [ZCompare] "r" (GFX.Z1), [ZSet] "r" (GFX.Z2)
+		: /* output */  [In8] "=&r" (In8), [Z] "=&r" (Z), [Cond] "=&r" (Cond), [Temp] "=&r" (Temp)
+		: /* input */   [OutPtr] "r" (Screen), [ZPtr] "r" (Depth), [Z32] "r" (*(uint32 *) Depth), [In32] "r" (*(uint32 *) Pixels), [Palette] "r" (ScreenColors), [ZCompare] "r" (GFX.Z1), [ZSet] "r" (GFX.Z2)
 		: /* clobber */ "memory"
 	);
 #else
