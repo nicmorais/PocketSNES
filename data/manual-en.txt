@@ -1,6 +1,6 @@
 PocketSNES, Super Nintendo Entertainment System emulator
 
-- Based on Snes9x core version 1.43-dev, 2014-03-23 -
+- Based on Snes9x core version 1.43-dev, 2014-04-26 -
 
 == Table of contents ==
 1. The PocketSNES Main Menu
