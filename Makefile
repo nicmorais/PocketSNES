@@ -3,9 +3,9 @@
 
 TARGET = PocketSNES
 
-CC  := $(CROSS_COMPILE)gcc
-CXX := $(CROSS_COMPILE)g++
-STRIP := $(CROSS_COMPILE)strip
+CC  := gcc
+CXX := g++
+STRIP := strip
 
 SYSROOT := $(shell $(CC) --print-sysroot)
 SDL_CFLAGS := $(shell $(SYSROOT)/usr/bin/sdl-config --cflags)
@@ -24,10 +24,10 @@ INCLUDE = -I pocketsnes \
 		-I pocketsnes/include \
 		-I menu -I pocketsnes/linux -I pocketsnes/snes9x
 
-CFLAGS = $(INCLUDE) -DRC_OPTIMIZED -D__LINUX__ -D__DINGUX__ -DNO_ROM_BROWSER \
+CFLAGS = $(INCLUDE) -DRC_OPTIMIZED -D__LINUX__ -D__DINGUX__ \
 		 -DGCW_ZERO \
 		 -g -O3 -pipe -ffast-math $(SDL_CFLAGS) \
-		 -flto
+		 -flto -fomit-frame-pointer -fexpensive-optimizations -mcpu=cortex-a8 -mtune=cortex-a8 -mfpu=neon
 
 CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
 
