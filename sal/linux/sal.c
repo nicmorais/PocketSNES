@@ -43,14 +43,14 @@ static u32 sal_Input(int held)
 
 	Uint8 type = (event.key.state == SDL_PRESSED);
 	switch(event.key.keysym.sym) {
-		CASE(LCTRL, A);
-		CASE(LALT, B);
-		CASE(SPACE, X);
-		CASE(LSHIFT, Y);
-		CASE(TAB, L);
-		CASE(BACKSPACE, R);
-		CASE(RETURN, START);
-		CASE(ESCAPE, SELECT);
+		CASE(i, A);
+		CASE(j, B);
+		CASE(u, X);
+		CASE(h, Y);
+		CASE(o, L);
+		CASE(k, R);
+		CASE(v, START);
+		CASE(c, SELECT);
 		CASE(UP, UP);
 		CASE(DOWN, DOWN);
 		CASE(LEFT, LEFT);
@@ -71,18 +71,19 @@ static u32 sal_Input(int held)
 
 	keystate = SDL_GetKeyState(NULL);
 	
-	if ( keystate[SDLK_LCTRL] ) inputHeld|=SAL_INPUT_A;
-	if ( keystate[SDLK_LALT] ) inputHeld|=SAL_INPUT_B;
-	if ( keystate[SDLK_SPACE] ) inputHeld|=SAL_INPUT_X;
-	if ( keystate[SDLK_LSHIFT] ) inputHeld|=SAL_INPUT_Y;
-	if ( keystate[SDLK_TAB] ) inputHeld|=SAL_INPUT_L;
-	if ( keystate[SDLK_BACKSPACE] ) inputHeld|=SAL_INPUT_R;
-	if ( keystate[SDLK_RETURN] ) inputHeld|=SAL_INPUT_START;
-	if ( keystate[SDLK_ESCAPE] ) inputHeld|=SAL_INPUT_SELECT;
+	if ( keystate[SDLK_i] ) inputHeld|=SAL_INPUT_A;
+	if ( keystate[SDLK_j] ) inputHeld|=SAL_INPUT_B;
+	if ( keystate[SDLK_u] ) inputHeld|=SAL_INPUT_X;
+	if ( keystate[SDLK_h] ) inputHeld|=SAL_INPUT_Y;
+	if ( keystate[SDLK_o] ) inputHeld|=SAL_INPUT_L;
+	if ( keystate[SDLK_k] ) inputHeld|=SAL_INPUT_R;
+	if ( keystate[SDLK_v] ) inputHeld|=SAL_INPUT_START;
+	if ( keystate[SDLK_c] ) inputHeld|=SAL_INPUT_SELECT;
 	if ( keystate[SDLK_UP] ) inputHeld|=SAL_INPUT_UP;
 	if ( keystate[SDLK_DOWN] ) inputHeld|=SAL_INPUT_DOWN;
 	if ( keystate[SDLK_LEFT] ) inputHeld|=SAL_INPUT_LEFT;
 	if ( keystate[SDLK_RIGHT] ) inputHeld|=SAL_INPUT_RIGHT;
+
 
 	// Process key repeats
 	timer=sal_TimerRead();
@@ -369,5 +370,3 @@ int main(int argc, char *argv[])
 	return mainEntry(argc,argv);
 //	return mainEntry(argc-1,&argv[1]);
 }
-
-
